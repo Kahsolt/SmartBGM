@@ -1,0 +1,26 @@
+[Project Directory Structure]
+SmartBGM\		# project root
+	doc/			# documents and propaganda
+	meta/			# meta info for .py code or .ui design
+	icon/			# static UI resources
+	music/			# static music library
+	test/           # test resources
+	out/			# result tmp folder
+	tmp/			# runtime tmp folder
+
+	DEPENDENCIES	# dependencies of this project
+	LICENSE         # developer license
+	STRUCTURE		# show project folder structure
+	VERSION		    # light weight changelog
+	README		    # brief description for project
+
+	Form_MainEditor.py	# (UI) Main Editor Form
+	Form_TagSelector.py	# (UI) Tag Seletion Form
+    MusicDB.py		# [DB: Pseudo-static]
+	Clipper.py      # [Module]
+	Analyzer.py     # [Module]
+	Matcher.py      # [Module]
+	Remixer.py	    # [Module]
+
+	SmartBGM.py     # laucher
+	run.bat			# laucher shortcut for Windows OS

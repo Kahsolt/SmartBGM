@@ -4,7 +4,7 @@
 #  Name:        MusicDB
 #  Author:      Kahsolt
 #  Time:        2017/3/6
-#  Desciption:  Use given tags to get recommended music piece in DB
+#  Desciption:  Static DB that hold all music tag info
 
 # Configurations
 MODE_ONLINE = False
