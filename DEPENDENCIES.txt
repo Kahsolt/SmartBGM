@@ -1,5 +1,0 @@
-PyQt4
-PyQt4.phonon
-MySQLdb
-moviepy
-pydub
