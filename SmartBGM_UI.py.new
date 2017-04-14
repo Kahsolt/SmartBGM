@@ -1,0 +1,87 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName(_fromUtf8("Form"))
+        Form.resize(912, 633)
+        self.layoutWidget = QtGui.QWidget(Form)
+        self.layoutWidget.setGeometry(QtCore.QRect(0, 0, 911, 631))
+        self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.layoutWidget)
+        self.verticalLayout_3.setMargin(0)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.horizontalLayout_videoplayer = QtGui.QHBoxLayout()
+        self.horizontalLayout_videoplayer.setObjectName(_fromUtf8("horizontalLayout_videoplayer"))
+        self.verticalLayout_3.addLayout(self.horizontalLayout_videoplayer)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.horizontalLayout_control_video = QtGui.QHBoxLayout()
+        self.horizontalLayout_control_video.setObjectName(_fromUtf8("horizontalLayout_control_video"))
+        self.horizontalLayout_2.addLayout(self.horizontalLayout_control_video)
+        self.line = QtGui.QFrame(self.layoutWidget)
+        self.line.setFrameShape(QtGui.QFrame.VLine)
+        self.line.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line.setObjectName(_fromUtf8("line"))
+        self.horizontalLayout_2.addWidget(self.line)
+        self.seekSlider_video = phonon.Phonon.SeekSlider(self.layoutWidget)
+        self.seekSlider_video.setObjectName(_fromUtf8("seekSlider_video"))
+        self.horizontalLayout_2.addWidget(self.seekSlider_video)
+        self.lcdNumber_video = QtGui.QLCDNumber(self.layoutWidget)
+        self.lcdNumber_video.setNumDigits(8)
+        self.lcdNumber_video.setObjectName(_fromUtf8("lcdNumber_video"))
+        self.horizontalLayout_2.addWidget(self.lcdNumber_video)
+        self.line_2 = QtGui.QFrame(self.layoutWidget)
+        self.line_2.setFrameShape(QtGui.QFrame.VLine)
+        self.line_2.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line_2.setObjectName(_fromUtf8("line_2"))
+        self.horizontalLayout_2.addWidget(self.line_2)
+        self.volumeSlider = phonon.Phonon.VolumeSlider(self.layoutWidget)
+        self.volumeSlider.setObjectName(_fromUtf8("volumeSlider"))
+        self.horizontalLayout_2.addWidget(self.volumeSlider)
+        self.horizontalLayout_2.setStretch(0, 10)
+        self.horizontalLayout_2.setStretch(2, 40)
+        self.horizontalLayout_2.setStretch(3, 5)
+        self.horizontalLayout_2.setStretch(4, 20)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.btn_autoMatch = QtGui.QPushButton(self.layoutWidget)
+        self.btn_autoMatch.setObjectName(_fromUtf8("btn_autoMatch"))
+        self.horizontalLayout.addWidget(self.btn_autoMatch)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem2)
+        self.verticalLayout_3.setStretch(0, 50)
+        self.verticalLayout_3.setStretch(1, 2)
+        self.verticalLayout_3.setStretch(2, 2)
+        self.verticalLayout_3.setStretch(3, 1)
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def retranslateUi(self, Form):
+        Form.setWindowTitle(_translate("Form", "Form", None))
+        self.btn_autoMatch.setText(_translate("Form", "一键配乐", None))
+
+from PyQt4 import phonon

@@ -19,7 +19,7 @@ except AttributeError:
 
 class Ui_Form(object):
     def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("Form"))
+        Form.setObjectName(_fromUtf8("Form_TagSelector"))
         Form.resize(336, 463)
         self.groupBox = QtGui.QGroupBox(Form)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 111, 261))

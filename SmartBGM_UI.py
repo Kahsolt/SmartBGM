@@ -17,9 +17,9 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_Form(object):
+class Form_Editor(object):
     def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("Form"))
+        Form.setObjectName(_fromUtf8("Form_Editor"))
         Form.resize(911, 627)
         self.line_3 = QtGui.QFrame(Form)
         self.line_3.setGeometry(QtCore.QRect(10, 580, 891, 16))
