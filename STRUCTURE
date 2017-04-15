@@ -24,3 +24,22 @@ SmartBGM\		# project root
 
 	SmartBGM.py     # laucher
 	run.bat			# laucher shortcut for Windows OS
+	
+[Classical Program Workflow]
+
+	slicer = Slicer('path_to_video')
+	slicer.sample_rate = 1			  # extract one frame per second
+	path_to_frame_slices_dir = slicer.slice()
+
+	analyzer = Analyzer('path_to_frame_slices_dir')
+	analyzer.post_processing = true	 # enable post processing filter
+	video_tags = analyzer.analyze()
+
+	matcher = Matcher(tags_video)
+	matcher.mode = 0					# if we have multiple selection algorithms
+	path_to_audio = matcher.match()
+
+	remixer = Remixer('path_to_video', 'path_to_audio')
+	remixer.timespan_video = [100, 300]	 # use whatever data struct suitable to indicate START POINT and LENGTH of the clip to insert to
+	remixer.timespan_audio = [500, 900]
+	path_to_outfile = remixer.remix()
