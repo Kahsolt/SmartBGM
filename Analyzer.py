@@ -17,21 +17,21 @@
 # Classes
 class Analyzer:
 
-    def __init__(self, path_to_video):
+    def __init__(self, path_to_frame_slices_dir):
         pass
 
     def analyze(self):
         pass
-        return 'path_to_frame_slices'
+        return 'video_tags'
 
 
 # Main Entrance
 def main():
     # 1.Construct
-    # analyzer = Analyzer('params to init an object')
+    # analyzer = Analyzer('path_to_frame_slices_dir')
 
     # 2.Configure
-    # slicer.post_processing = true    # Enable post processing filter
+    # analyzer.post_processing = true    # Enable post processing filter
 
     # 3.Call methods
     # video_tags = analyzer.analyze()

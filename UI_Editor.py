@@ -10,7 +10,6 @@ try:
 except AttributeError:
     def _fromUtf8(s):
         return s
-
 try:
     _encoding = QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
@@ -19,9 +18,9 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QApplication.translate(context, text, disambig)
 
-class Form_Editor(object):
+class UI_Editor(object):
     def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("Form_Editor"))
+        Form.setObjectName(_fromUtf8("UI_Editor"))
         Form.resize(911, 627)
         self.line_3 = QFrame(Form)
         self.line_3.setGeometry(QRect(10, 580, 891, 16))
@@ -236,9 +235,9 @@ class Form_Editor(object):
         self.btn_merge.setText(_translate("Form", "添加音频", None))
         self.btn_save.setText(_translate("Form", "写入并保存", None))
 
-class Form_Editor_Auto(object):
+class UI_Editor_Auto(object):
     def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("Form_Editor_Auto"))
+        Form.setObjectName(_fromUtf8("UI_Editor_Auto"))
         Form.resize(912, 633)
         self.layoutWidget = QWidget(Form)
         self.layoutWidget.setGeometry(QRect(0, 0, 911, 631))
@@ -302,5 +301,4 @@ class Form_Editor_Auto(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Form", None))
         self.btn_autoMatch.setText(_translate("Form", "一键配乐", None))
-
 

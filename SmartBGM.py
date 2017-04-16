@@ -1,185 +1,46 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-from PyQt4 import QtCore, QtGui
-from PyQt4 import phonon
+import sys, os, threading
+
 from PyQt4.QtCore import *
-from Form_MainEditor import Ui_Form
-from Form_TagSelector import Ui_Form as subUI_Form
-from PyQt4.QtCore import QThread
+from PyQt4.QtGui import *
+from PyQt4 import phonon
 
-#from lib.operations import *
-from MusicDB import *
-import sys
-import os
-import threading
-from lib.operations import operations
+from UI_Editor import UI_Editor, UI_Editor_Auto
+from Dialog_Tags import Dialog_Tags
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-__author__ = '吕林坤'
-
-checkBoxNum = 36
+from Slicer import Slicer
+from Analyzer import Analyzer
+from Matcher import Matcher
+from Remixer import Remixer
 
 try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
+    _fromUtf8 = QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+try:
+    _encoding = QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+        return QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
-
-
-# 这个进程合成第一段音轨
-class myThread(QThread):#BUG
-    def __init__(self,cutinTime,cutoutTime,audioTime,audiofile,object):
-        QThread.__init__(self)
-        self.cutinTime=cutinTime
-        self.cutoutTime=cutoutTime
-        self.audiofile=audiofile
-        self.audioTime=audioTime
-        # self.videofile=videofile
-        self.handler=object
-    def run(self):
-        in_time = self.cutinTime.hour() * 3600 + self.cutinTime.minute() * 60 + self.cutinTime.second()
-        out_time = self.cutoutTime.hour() * 3600 + self.cutoutTime.minute() * 60 + self.cutoutTime.second()
-        audio_time = self.audioTime.hour() * 3600 + self.audioTime.minute() * 60 + self.audioTime.second()
-        Afile = self.audiofile.toUtf8()
-        temp1 = os.path.split(Afile)
-        t1 = str(temp1[1])
-
-        # Vfile = self.videofile.toUtf8()
-        # temp2 = os.path.split(Vfile)
-        # t2 = str(temp2[1])
-
-        # self.handler = operations(audioName=t1, videoName=t2)
-        self.handler.afterInit()
-        self.handler.video_merge(cutinTime=in_time, cutoutTime=out_time, \
-                                 audiofile=t1, audioTime=audio_time)
-
-        # mainUI.alert(7)
-
-
-    # 这个进程去合并已有的音轨
-class combineThread(QThread):
-    def __init__(self,videoName,audioName,object,finalname='finalResult.mp4'):
-        QThread.__init__(self)
-        # self.cutinTime = cutinTime
-        # self.cutoutTime = cutoutTime
-        # self.audiofile = audiofile
-        # self.audioTime = audioTime
-        # self.videofile = videofile
-        self.name=finalname
-        self.videoName=videoName
-        self.audioName=audioName
-        self.handler=object
-    def run(self):
-        # mainUI.thread1.handler.castAudio(self.name)
-        # self.soundTrack.export(self.soundTrackName)
-        # tempVideo=VideoFileClip(self.videoName)
-        # tempVideo=tempVideo.without_audio()
-        # tempAudio = AudioFileClip(self.audioName)
-        # self.curVideo.set_audio(tempAudio)
-        # self.curVideo.write_videofile(self.name)
-        self.handler.castAudio(fileName=self.name)
+        return QApplication.translate(context, text, disambig)
 
 #多继承VideoWidget和QWidget
-class myVideoWidget(phonon.Phonon.VideoWidget,QtGui.QWidget):
+class myVideoWidget(phonon.Phonon.VideoWidget,QWidget):
     def __init__(self,x):
         super(myVideoWidget,self).__init__()
         #self.videoPlayer = phonon.Phonon.VideoWidget(x)  # 声明VideoWidget控件
 
-#继承QtGui.QWidget,实现show方法
-class mySubUI(QtGui.QWidget):
-    def __init__(self, form):
-        super(mySubUI,self).__init__()
-        self.fatherForm = form
-        self.UI=subUI_Form()
-        self.UI.setupUi(self)
-        self.setWindowTitle(u'配乐类型')  # 窗口标题
-        self.tags=[]#标签集合
-        self.checkBoxSet=[]
-        self.addCheckBox()
-        self.UI.checkBox.isChecked()
-        self.musicDB = MusicDB()
-        # 绑定确定按钮，返回选中的标签信息
-        self.connect(self.UI.btn_tag_ok, QtCore.SIGNAL('clicked()'), self.clk_tag_ok)
+class SmartBGM(QWidget):
 
-    def addCheckBox(self):
-        self.checkBoxSet.append(self.UI.checkBox)
-        self.checkBoxSet.append(self.UI.checkBox2)
-        self.checkBoxSet.append(self.UI.checkBox3)
-        self.checkBoxSet.append(self.UI.checkBox4)
-        self.checkBoxSet.append(self.UI.checkBox5)
-        self.checkBoxSet.append(self.UI.checkBox6)
-        self.checkBoxSet.append(self.UI.checkBox7)
-        self.checkBoxSet.append(self.UI.checkBox8)
-        self.checkBoxSet.append(self.UI.checkBox9)
-        self.checkBoxSet.append(self.UI.checkBox10)
-        self.checkBoxSet.append(self.UI.checkBox11)
-        self.checkBoxSet.append(self.UI.checkBox12)
-        self.checkBoxSet.append(self.UI.checkBox13)
-        self.checkBoxSet.append(self.UI.checkBox14)
-        self.checkBoxSet.append(self.UI.checkBox15)
-        self.checkBoxSet.append(self.UI.checkBox16)
-        self.checkBoxSet.append(self.UI.checkBox17)
-        self.checkBoxSet.append(self.UI.checkBox18)
-        self.checkBoxSet.append(self.UI.checkBox19)
-        self.checkBoxSet.append(self.UI.checkBox21)
-        self.checkBoxSet.append(self.UI.checkBox22)
-        self.checkBoxSet.append(self.UI.checkBox23)
-        self.checkBoxSet.append(self.UI.checkBox24)
-        self.checkBoxSet.append(self.UI.checkBox25)
-        self.checkBoxSet.append(self.UI.checkBox26)
-        self.checkBoxSet.append(self.UI.checkBox27)
-        self.checkBoxSet.append(self.UI.checkBox28)
-        self.checkBoxSet.append(self.UI.checkBox29)
-        self.checkBoxSet.append(self.UI.checkBox30)
-        self.checkBoxSet.append(self.UI.checkBox31)
-        self.checkBoxSet.append(self.UI.checkBox32)
-        self.checkBoxSet.append(self.UI.checkBox33)
-        self.checkBoxSet.append(self.UI.checkBox34)
-        self.checkBoxSet.append(self.UI.checkBox35)
-        self.checkBoxSet.append(self.UI.checkBox36)
-
-    #jsr来写！蒋松儒！！
-    def clk_tag_ok(self):
-        self.fatherForm.UI.comboBox.clear()
-        queryTags = []
-        for i in range(0,checkBoxNum-1):
-            if self.checkBoxSet[i].isChecked() == True:
-                # self.tags.append(self.checkBoxSet[i].text())
-                # print unicode(self.checkBoxSet[i].text())
-                queryTags.append(self.checkBoxSet[i].text().toUtf8())
-        res = self.musicDB.search(queryTags)    # or use .match()
-        for song in res:        #str
-            # listKey = song.decode('utf8')
-            listKey = song.decode('utf8')
-            self.fatherForm.UI.comboBox.addItem(QString(listKey))
-            fname = MUSIC_DIR + song + MUSIC_EXT  # str
-            self.fatherForm.audiolist[listKey.encode('utf8')] = unicode(fname)
-        self.hide()
-
-        tmp = unicode(self.fatherForm.UI.comboBox.currentText().toUtf8(), 'utf8', 'ignore')
-        tmp = str(tmp).encode('utf8')
-        file = QString(self.fatherForm.audiolist[tmp])
-        print '[=>]' + file
-        self.fatherForm.audiofile = file
-
-        self.fatherForm.mediaObjectAudio.setCurrentSource(phonon.Phonon.MediaSource(file))
-        # 初始化音频的输出按钮
-        self.fatherForm.audioOutput_audio = phonon.Phonon.AudioOutput(phonon.Phonon.VideoCategory, self.fatherForm)
-        phonon.Phonon.createPath(self.fatherForm.mediaObjectAudio, self.fatherForm.audioOutput_audio)
-        # 连接到音量
-        # self.UI.volumeSlider.setAudioOutput(self.audioOutput_audio)
-        # 连接到进度条
-        self.fatherForm.UI.seekSlider_audio.setMediaObject(self.fatherForm.mediaObjectAudio)
-        self.fatherForm.mediaObjectAudio.play()
-
-class mainUI(QtGui.QWidget):
     def __init__(self):
-        super(mainUI,self).__init__()#初始化类，待补充
+        super(SmartBGM, self).__init__()
+        self.initUI()
+        self.UI=UI_Editor()     #实例化主界面
+        self.UI.setupUi(self)   #执行部署designer绘制的ui界面
 
         #用以下两个量来标记是否已经打开了文件
         self.displayTime=None
@@ -198,14 +59,8 @@ class mainUI(QtGui.QWidget):
         self.videofile=None
         self.audiofile=None
 
-        self.UI=Ui_Form()#实例化主界面
-        self.UI.setupUi(self)#执行部署designer绘制的ui界面
-
-        self.subUI=None
-        #self.subUI.setupUi(self)
-
         self.setWindowTitle(u'SmartBGM')#窗口标题
-        self.setWindowIcon(QtGui.QIcon(r'\icon\SmartBGM.icon'))#设置窗口图标
+        self.setWindowIcon(QIcon(r'\icon\SmartBGM.icon'))#设置窗口图标
         self.mediaObjectVideo = phonon.Phonon.MediaObject(self)#声明视频对象
         self.mediaObjectVideo.stateChanged.connect(self.stateChanged) # 对象改变时，应该是注册事件，响应按钮
         self.mediaObjectVideo.tick.connect(self.videotick) #连接到时间
@@ -218,38 +73,38 @@ class mainUI(QtGui.QWidget):
 
 
         # 绑定播放控件的右键事件
-        self.connect(self.UI.videoPlayer, QtCore.SIGNAL('customContextMenuRequested (const QPoint&)'), self.openright)
+        self.connect(self.UI.videoPlayer, SIGNAL('customContextMenuRequested (const QPoint&)'), self.openright)
         # 绑定视频切入切出的按钮
-        self.connect(self.UI.btn_cutin,QtCore.SIGNAL('clicked()'),self.audiocutin)
-        self.connect(self.UI.btn_cutout, QtCore.SIGNAL('clicked()'), self.audiocutout)
+        self.connect(self.UI.btn_cutin,SIGNAL('clicked()'),self.audiocutin)
+        self.connect(self.UI.btn_cutout, SIGNAL('clicked()'), self.audiocutout)
         # 绑定标签打开的按钮
-        self.connect(self.UI.btn_tag,QtCore.SIGNAL('clicked()'),self.tag_click)
+        self.connect(self.UI.btn_tag,SIGNAL('clicked()'),self.tag_click)
         # 绑定加入用于确定音频开始点的按钮和对应的处理事件audio_start_clk
-        self.connect(self.UI.btn_audio_start, QtCore.SIGNAL('clicked()'), self.audio_start_clk)
+        self.connect(self.UI.btn_audio_start, SIGNAL('clicked()'), self.audio_start_clk)
         # 绑定音视频合并按钮和相应事件
-        self.connect(self.UI.btn_merge,QtCore.SIGNAL('clicked()'),self.video_merge)
+        self.connect(self.UI.btn_merge,SIGNAL('clicked()'),self.video_merge)
         #绑定combobox下拉选中条目的事件
-        # self.UI.comboBox.connect(self.UI.comboBox,QtCore.SIGNAL("currentIndexChanged"),self.comboBoxItemClick)
+        # self.UI.comboBox.connect(self.UI.comboBox,SIGNAL("currentIndexChanged"),self.comboBoxItemClick)
         self.UI.comboBox.activated.connect(self.comboBoxItemClick)
         # 绑定同时播放按钮
-        self.connect(self.UI.btn_play_together,QtCore.SIGNAL('clicked()'),self.play_together_click)
+        self.connect(self.UI.btn_play_together,SIGNAL('clicked()'),self.play_together_click)
         # 绑定合并音视频并保存按钮
-        self.connect(self.UI.btn_save,QtCore.SIGNAL('clicked()'),self.saveVideoAudio)
+        self.connect(self.UI.btn_save,SIGNAL('clicked()'),self.saveVideoAudio)
 
         #self.comboBoxTest()
         self.subUI = mySubUI(self)
 
     def setupUi(self):
         #声明视频控制端行为  包含：播放，暂停，重新开始
-        self.playActionVideo = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaPlay),"Play",
+        self.playActionVideo = QAction(self.style().standardIcon(QStyle.SP_MediaPlay),"Play",
                                              self,shortcut="Ctrl+P",enabled=False,triggered=self.mediaObjectVideo.play)
-        self.pauseActionVideo = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaPause),"Pause",
+        self.pauseActionVideo = QAction(self.style().standardIcon(QStyle.SP_MediaPause),"Pause",
                                               self,shortcut="Ctrl+A",enabled=False,triggered=self.mediaObjectVideo.pause)
-        self.stopActionVideo = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaStop),"Stop",self,
+        self.stopActionVideo = QAction(self.style().standardIcon(QStyle.SP_MediaStop),"Stop",self,
                                              shortcut="Ctrl+S",enabled=False,triggered=self.mediaObjectVideo.stop)
 
         # 添加视频控制端   包含 播放， 暂停， 重新开始
-        videobar = QtGui.QToolBar()
+        videobar = QToolBar()
         videobar.addAction(self.playActionVideo)
         videobar.addAction(self.pauseActionVideo)
         videobar.addAction(self.stopActionVideo)
@@ -257,16 +112,16 @@ class mainUI(QtGui.QWidget):
         self.UI.horizontalLayout_control_video.addWidget(videobar)
 
         #声明音频控制端行为  包含：播放，暂停，重新开始
-        self.playActionAudio = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaPlay),"Play",self,
+        self.playActionAudio = QAction(self.style().standardIcon(QStyle.SP_MediaPlay),"Play",self,
                                              shortcut="Ctrl+Alt+P",enabled=False,triggered=self.mediaObjectAudio.play)
-        self.pauseActionAudio = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaPause),"Pause",self,
+        self.pauseActionAudio = QAction(self.style().standardIcon(QStyle.SP_MediaPause),"Pause",self,
                                              shortcut="Ctrl+Alt+A",enabled=False,triggered=self.mediaObjectAudio.pause)
-        self.stopActionAudio = QtGui.QAction(self.style().standardIcon(QtGui.QStyle.SP_MediaStop),"Stop",self,
+        self.stopActionAudio = QAction(self.style().standardIcon(QStyle.SP_MediaStop),"Stop",self,
                                              shortcut="Ctrl+Alt+S",enabled=False,triggered=self.mediaObjectAudio.stop)
 
 
         # 添加音频控制端   包含 播放， 暂停， 重新开始
-        audiobar = QtGui.QToolBar()
+        audiobar = QToolBar()
         audiobar.addAction(self.playActionAudio)
         audiobar.addAction(self.pauseActionAudio)
         audiobar.addAction(self.stopActionAudio)
@@ -274,26 +129,26 @@ class mainUI(QtGui.QWidget):
         self.UI.horizontalLayout_control_audio.addWidget(audiobar)
 
         #  显示视频LED时间
-        palette_videolcd = QtGui.QPalette()#声明调色板
-        palette_videolcd.setBrush(QtGui.QPalette.Light,QtCore.Qt.darkGray)#设置刷子颜色
+        palette_videolcd = QPalette()#声明调色板
+        palette_videolcd.setBrush(QPalette.Light,Qt.darkGray)#设置刷子颜色
         self.timeLcd_video = self.UI.lcdNumber_video#将lcd数字灯赋给新的对象名
         self.timeLcd_video.setPalette(palette_videolcd)#设置配色方案
         self.timeLcd_video.display('00:00:00')#设置显示格式
 
         #  显示音频LED时间
-        palette_audiolcd = QtGui.QPalette()#声明调色板
-        palette_audiolcd.setBrush(QtGui.QPalette.Light,QtCore.Qt.darkBlue)#设置刷子颜色
+        palette_audiolcd = QPalette()#声明调色板
+        palette_audiolcd.setBrush(QPalette.Light,Qt.darkBlue)#设置刷子颜色
         self.timeLcd_audio = self.UI.lcdNumber_audio#将lcd数字灯赋给新的对象名
         self.timeLcd_audio.setPalette(palette_audiolcd)#设置配色方案
         self.timeLcd_audio.display('00:00')#设置显示格式
 
-        self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint) #停用窗口最大化按钮
+        self.setWindowFlags(Qt.WindowMinimizeButtonHint) #停用窗口最大化按钮
         self.setFixedSize(self.width(),self.height()) #禁止改变窗口的大小
         #  添加播放控件
         self.UI.videoPlayer = myVideoWidget(self)  # 声明VideoWidget控件
         self.UI.horizontalLayout_videoplayer.addWidget(self.UI.videoPlayer)  # 将videoPlayer加入到预留的布局里面
         # 设置播放控件能右键产生菜单的属性
-        self.UI.videoPlayer.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.UI.videoPlayer.setContextMenuPolicy(Qt.CustomContextMenu)
 
     # 合并音视频并保存按钮的响应事件
     def saveVideoAudio(self):
@@ -326,7 +181,6 @@ class mainUI(QtGui.QWidget):
         self.playActionVideo.setEnabled(False)
         self.pauseActionVideo.setEnabled(True)
         self.stopActionVideo.setEnabled(True)
-
 
     #comboBox下拉点击响应函数
     def comboBoxItemClick(self):
@@ -398,7 +252,6 @@ class mainUI(QtGui.QWidget):
         self.UI.seekSlider_audio.setMediaObject(self.mediaObjectAudio)
         self.mediaObjectAudio.play()
 
-
     # 2017-03-06 zr
     # 规则：
     # 音频时间设为T0到end,end-T0=t1,视频时间总时间设为0到t2,视频两个点之间的时间设为T1到T2，T2-T1=t3.
@@ -451,9 +304,10 @@ class mainUI(QtGui.QWidget):
 
     # 配乐类型选择按钮
     def tag_click(self):
-        self.subUI.show()
-        #if not     #如果推荐的相应文件不为空
-        #self.audioTime=Qtime(0,0,0)
+        dialog = Dialog_Tags(self)
+        if dialog.exec_():
+            pass
+        dialog.destroy()
 
     # 音频嵌入的视频段开始点
     def audiocutin(self):
@@ -497,11 +351,11 @@ class mainUI(QtGui.QWidget):
 
     # video screen 右键菜单
     def openright(self):
-        popMenu = QtGui.QMenu()#弹出菜单控件
+        popMenu = QMenu()#弹出菜单控件
         #添加弹出菜单项，自定义图标，并且绑定事件，分别为加载音频和加载视频
-        popMenu.addAction(QtGui.QAction(QtGui.QIcon(r'.\icon\video.ico'),u'打开视频文件',self,enabled = True, triggered=self.openvideo))
-        popMenu.addAction(QtGui.QAction(QtGui.QIcon(r'.\icon\audio.ico'),u'音频文件',self,enabled = True, triggered=self.openaudio))
-        popMenu.exec_(QtGui.QCursor.pos())
+        popMenu.addAction(QAction(QIcon(r'.\icon\video.ico'),u'打开视频文件',self,enabled = True, triggered=self.openvideo))
+        popMenu.addAction(QAction(QIcon(r'.\icon\audio.ico'),u'音频文件',self,enabled = True, triggered=self.openaudio))
+        popMenu.exec_(QCursor.pos())
 
     # 响应combobox的改变
     def videoList_change(self):
@@ -566,20 +420,20 @@ class mainUI(QtGui.QWidget):
     # 错误警告信息
     def alert(self,err_num):
         if   err_num == 1:
-            QtGui.QMessageBox.question(self,(u'提示'),(u'请先读取视频！'),QtGui.QMessageBox.Ok)
+            QMessageBox.question(self,(u'提示'),(u'请先读取视频！'),QMessageBox.Ok)
         elif err_num == 2:
-            QtGui.QMessageBox.question(self, (u'提示'), (u'请先指定音频插入的视频段的起始时间！'),
-                                       QtGui.QMessageBox.Ok)
+            QMessageBox.question(self, (u'提示'), (u'请先指定音频插入的视频段的起始时间！'),
+                                       QMessageBox.Ok)
         elif err_num == 3:
-            QtGui.QMessageBox.question(self, (u'提示'), (u'当前时间小于指定的视频段起始时间，请重新指定！'),
-                                       QtGui.QMessageBox.Ok)
+            QMessageBox.question(self, (u'提示'), (u'当前时间小于指定的视频段起始时间，请重新指定！'),
+                                       QMessageBox.Ok)
         elif err_num == 4:
-            QtGui.QMessageBox.question(self, (u'提示'), (u'视频段的时间间距太小，请重新指定！'),
-                                       QtGui.QMessageBox.Ok)
+            QMessageBox.question(self, (u'提示'), (u'视频段的时间间距太小，请重新指定！'),
+                                       QMessageBox.Ok)
         elif err_num == 5:
-            QtGui.QMessageBox.question(self, (u'提示'), (u'请先指定需要的配乐类型！'), QtGui.QMessageBox.Ok)
+            QMessageBox.question(self, (u'提示'), (u'请先指定需要的配乐类型！'), QMessageBox.Ok)
         elif err_num == 6:
-            QtGui.QMessageBox.question(self, (u'提示'), (u'请指定音视频文件和对应的时间！'), QtGui.QMessageBox.Ok)
+            QMessageBox.question(self, (u'提示'), (u'请指定音视频文件和对应的时间！'), QMessageBox.Ok)
 
     #选择文件
     def addFiles(self,filetype='all'):
@@ -593,11 +447,11 @@ class mainUI(QtGui.QWidget):
             tips=u'请选择播放文件'
             expand = 'Files(*)'
         # getOpenFileName 只能选择一个  getOpenFileNames  可多个选择
-        # files = QtGui.QFileDialog.getOpenFileName(self, tips, QtGui.QDesktopServices.storageLocation(
-        #     QtGui.QDesktopServices.DesktopLocation), expand)
+        # files = QFileDialog.getOpenFileName(self, tips, QDesktopServices.storageLocation(
+        #     QDesktopServices.DesktopLocation), expand)
         currentPath = os.getcwd()+r'\Videos'
-        #currentPath = QtGui.QDesktopServices.storageLocation(tGui.QDesktopServices.DesktopLocation)
-        files = QtGui.QFileDialog.getOpenFileName(self, tips,currentPath,expand)
+        #currentPath = QDesktopServices.storageLocation(tGui.QDesktopServices.DesktopLocation)
+        files = QFileDialog.getOpenFileName(self, tips,currentPath,expand)
         print type(files)
 
         if not files:
@@ -609,10 +463,10 @@ class mainUI(QtGui.QWidget):
 
         if newState == phonon.Phonon.ErrorState:#如果出现错误状态，即刻报告
             if self.mediaObjectVideo.errorType() == phonon.Phonon.FatalError:
-                QtGui.QMessageBox.warning(self,"Fatal Error",
+                QMessageBox.warning(self,"Fatal Error",
                         self.mediaObjectVideo.errorString())
             else:
-                QtGui.QMessageBox.warning(self,"Error",
+                QMessageBox.warning(self,"Error",
                         self.mediaObjectVideo.errorString())
 
         elif newState == phonon.Phonon.PlayingState:#当按下播放按键时候，改变相应状态
@@ -636,10 +490,10 @@ class mainUI(QtGui.QWidget):
 
         if newState == phonon.Phonon.ErrorState:#如果出现错误状态，即刻报告
             if self.mediaObjectVideo.errorType() == phonon.Phonon.FatalError:
-                QtGui.QMessageBox.warning(self,"Fatal Error",
+                QMessageBox.warning(self,"Fatal Error",
                         self.mediaObjectVideo.errorString())
             else:
-                QtGui.QMessageBox.warning(self,"Error",
+                QMessageBox.warning(self,"Error",
                         self.mediaObjectVideo.errorString())
 
         elif newState == phonon.Phonon.PlayingState:#当按下播放按键时候，改变相应状态
@@ -661,24 +515,24 @@ class mainUI(QtGui.QWidget):
     # 时间绑定
     def videotick(self,time):
         #相关函数的时间度量是以ms为单位
-        self.displayTime = QtCore.QTime((time /3600000),(time /60000)%60,(time / 1000)%60)
+        self.displayTime = QTime((time /3600000),(time /60000)%60,(time / 1000)%60)
         self.timeLcd_video.display(self.displayTime.toString('hh:mm:ss'))
 
     # 时间绑定
     def audiotick(self,time):
         #相关函数的时间度量是以ms为单位
-        self.audioTime = QtCore.QTime((time /3600000),(time /60000)%60,(time / 1000)%60)
+        self.audioTime = QTime((time /3600000),(time /60000)%60,(time / 1000)%60)
         self.timeLcd_audio.display(self.audioTime.toString('mm:ss'))
 
     #响应esc退出画面
     def keyPressEvent(self,event):
-        if event.key()==QtCore.Qt.Key_Escape:
-            self.close();
-
+        if event.key() == Qt.Key_Escape:
+            self.close()
 
 if __name__ == '__main__':
-    app=QtGui.QApplication(sys.argv)
-    mainapp = mainUI()
+    app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
-    mainapp.show()
+    smartBGM = SmartBGM()
+    smartBGM.show()
     sys.exit(app.exec_())
+

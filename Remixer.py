@@ -37,7 +37,7 @@ def main():
     # remixer.timespan_audio = [500, 900]
 
     # 3.Call methods
-    # path_to_outile_dir = remixer.remix()
+    # path_to_outfile = remixer.remix()
 
     pass
 
