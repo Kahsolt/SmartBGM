@@ -1,5 +1,8 @@
+[apt/yum]
 PyQt4
 PyQt4.phonon
+
+[pip]
 MySQLdb
 moviepy
 pydub

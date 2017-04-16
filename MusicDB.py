@@ -7,10 +7,6 @@
 #  Desciption:  Static DB that hold all music tag info
 
 # Configurations
-MODE_ONLINE = False
-
-MUSIC_ITEM_MAX = 20
-MUSIC_MATCH_THRESHOLD = 0.5
 MUSIC_DIR = r'./music/'
 MUSIC_EXT = r'.mp3'
 MUSIC_VOC=['流行摇滚', '乡村民谣', '爵士蓝调', '金属朋克', '轻音乐', '古典', '国风', '电子', '说唱',
@@ -25,10 +21,15 @@ DB_MYSQL_PASSWD = r'YLQ-kahsolt'
 DB_MYSQL_SCHEMA = r'audiv'
 DB_MYSQL_CHARSET = r'utf8'
 
+# Consts
+MODE_ONLINE = 'Online'
+MODE_OFFLINE = 'Offline'
+
 # Imports
-import random
-if MODE_ONLINE:
+try:
 	import MySQLdb
+except:
+    print('MusicDB: MySQLdb lib is missing, Local Mode availble only.')
 
 # Classes
 class DBMySQL:
@@ -72,29 +73,21 @@ class DBText:
                         fdb.readline()    # skip the seperator line
                         self.dictMusic.append(song)
         except:
-            print('DBText: no local db, update() needed')
-
-    def __str__(self):
-        info = ''
-        for song in self.dictMusic:
-            info += song['title'] + '\n'
-            info += '\t'
-            info += ','.join(song['tags']) + '\n'
-        return info
+            print('DBText: no local db, online update() needed')
 
     def write(self, mysqlTable):     # File Over Write!!
         try:
             with open(DB_LOCAL_FILE, 'w+') as fdb:
                 for song in mysqlTable:
                     fdb.write(song[0])
-                    fdb.write('\r\n')
+                    fdb.write('\n')
                     for idx in range(1,5):  # merge all tags
                         if song[idx]!='':
                             fdb.write(song[idx])
                         if idx != 4:
                             fdb.write(',')
-                    fdb.write('\r\n')
-                    fdb.write('\r\n')  # separator line
+                    fdb.write('\n')
+                    fdb.write('\n')  # separator line
         except:
             print('DBText: write file error')
 
@@ -107,65 +100,26 @@ class DBText:
                 print('MusicDB: tag \'' + t + '\' is invalid, omitted')
         return ntags
 
-    def __calcMatchScore(self, queryTags, songTags):
-        if len(queryTags) == 0:
-            return 1.0
-        else:
-            cnt = 0
-            for t in queryTags:
-                if t in songTags:
-                    cnt += 1
-            return cnt / len(queryTags)
-
-    def query(self, tags):
-        tags = self.__checkTags(tags)
-        res = []
-        for song in self.dictMusic:
-            if self.__calcMatchScore(tags, song['tags']) == 1.0:
-                res.append(song['title'])
-        return res
-
-    def rank(self, tags):
-        tags = self.__checkTags(tags)
-        res = []
-        for song in self.dictMusic:
-            if self.__calcMatchScore(tags, song['tags']) > MUSIC_MATCH_THRESHOLD:
-                res.append(song['title'])
-        #### another method: pick a certain number from th top
-        # res = {}
-        # for song in self.dictMusic:
-        #     res[song['title']] = self.__calcMatchScore(tags, song['tags'])
-        # sorted(res.items(), key = lambda t:t[1], reverse = True)
-        return res
-
-class MusicDB():
-    def __init__(self):
-        if MODE_ONLINE:
+class MusicDB:
+    def __init__(self, mode = MODE_OFFLINE):
+        self.mode = mode
+        if self.mode == MODE_ONLINE:
             self.dbMySQL = DBMySQL()
         else:
             print('MusicDB: working in local mode')
         self.dbText = DBText()
 
     def update(self):
-        if MODE_ONLINE:
-            try:
-                self.dbText.write(self.dbMySQL.getMusic())
-            except:
-                print('MusicDB: update failed')
-        else:
-            print('MusicDB: working in off-line mode, cannot do this operation')
+        if self.mode == MODE_OFFLINE:
+            print('MusicDB: working in local mode, operation failed')
+            return
+        try:
+            self.dbText.write(self.dbMySQL.getMusic())
+        except:
+            print('MusicDB: update failed')
 
     def list(self):
         print(self.dbText)
-
-    def match(self,tags):
-        smartbgm = self.dbText.query(tags)
-        random.shuffle(smartbgm)
-        return smartbgm[:MUSIC_ITEM_MAX]
-
-    def search(self, tags):
-        smartbgm = self.dbText.rank(tags)
-        return smartbgm[:MUSIC_ITEM_MAX]
 
 # Main Entrance
 def main():
