@@ -33,12 +33,12 @@ class Slicer:
 
         # self.videoName=r'cononL.mp4'
         self.ImgperSecond="fps=1"
-        self.defaultCommand="ffmpeg -i videoname -vf imgpersecond %03d.jpg"
+        self.defaultCommand="ffmpeg -i videoname -vf imgpersecond %d.jpg"
         self.CommandP1="ffmpeg -i "
         self.CommandP2=""
         self.CommandP3=" -vf "
         self.CommandP4=""
-        self.CommandP5=" "+path_to_img+r"%03d.jpg"
+        self.CommandP5=" "+path_to_img+r"%d.jpg"
         self.initImgs()
 
     def fps_rate(self,rate):
@@ -65,7 +65,7 @@ def main():
 
     # 2.Configure
     # slicer.sample_rate = 1    # extract one frame per second
-    slicer.fps_rate(0.2)
+    slicer.fps_rate(0.1)
 
     # 3.Call methods
     # path_to_frame_slices_dir = slicer.slice()
