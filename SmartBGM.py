@@ -1,16 +1,17 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+#==========================
+#  Name:        SmartBGM
+#  Author:      lincoln; and kahsolt fucked it up
+#  Time:        2017/04/16
+#  Desciption:  SmartBGM manual mode main editor
 
-import sys, os, threading
-
+import sys, os
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import phonon
 
-from Dialog_Tags import Dialog_Tags
-
-from Slicer import Slicer
-from Analyzer import Analyzer
+from TagSelector import TagSelector
 from Matcher import Matcher
 from Remixer import Remixer
 
@@ -30,15 +31,12 @@ except AttributeError:
 def QString2String(qStr):
     return unicode(qStr.toUtf8(), 'utf-8', 'ignore')
 
-# 多继承VideoWidget和QWidget
 # 使得VideoWidget拥有QWidget的方法，主要是右键菜单
 class myVideoWidget(phonon.Phonon.VideoWidget,QWidget):
     def __init__(self, parent):
         super(myVideoWidget,self).__init__()
 
 class SmartBGM(QWidget):
-
-    # 构造函数
     def __init__(self):
         super(SmartBGM, self).__init__()
 
@@ -53,12 +51,17 @@ class SmartBGM(QWidget):
         self.connect(self.UI.btn_video_cutin, SIGNAL('clicked()'), self.btn_videoCutIn_click)
         self.connect(self.UI.btn_video_cutout, SIGNAL('clicked()'), self.btn_videoCutOut_click)
         self.connect(self.UI.btn_audio_cutin, SIGNAL('clicked()'), self.btn_audioCutIn_click)
+        # self.UI.cmb_music.activated.connect(self.comboBoxItemClick)
         self.connect(self.UI.cmb_music, SIGNAL('currentIndexChanged()'), self.cmb_music_click)
-        #self.UI.comboBox.activated.connect(self.comboBoxItemClick)
         self.connect(self.UI.btn_tagsDialog, SIGNAL('clicked()'), self.btn_tagsDialog_click)
         self.connect(self.UI.btn_playTogether, SIGNAL('clicked()'), self.btn_playTogether_click)
         self.connect(self.UI.btn_merge, SIGNAL('clicked()'), self.btn_merge_click)
         self.connect(self.UI.btn_save, SIGNAL('clicked()'), self.btn_save_click)
+
+        # 子控件
+        self.tagSelector = TagSelector(self)
+        # 音频列表
+        self.audiolist = {}     # will be deprecated
 
         # 媒体文件路径: str-utf8
         self.videofile=None
@@ -70,8 +73,6 @@ class SmartBGM(QWidget):
         self.cutinTime_video=None
         self.cutoutTime_video=None
         self.cutinTime_audio=None
-        # 音频列表
-        self.audiolist = {}
 
     # 上下文右键菜单
     def menu_open(self):
@@ -171,12 +172,9 @@ class SmartBGM(QWidget):
 
     # 配乐类型选择按钮
     def btn_tagsDialog_click(self):
-        tags = None
-        tagsDialog = Dialog_Tags(self)
-        if tagsDialog.exec_():
-            tags=tagsDialog.getTags()
-        tagsDialog.destroy()
-        print '[tagsDialog] Tags recieved: ' + tags
+        self.tagSelector.exec_()    # Block main form thread
+        tags = self.tagSelector.tagsSelected
+        print '[tagsDialog] Tags recieved: ' + (len(tags)>0 and ','.join(tags) or '<None>')
     # 一起播放按钮
     def btn_playTogether_click(self):
         if self.videofile == None:
@@ -295,15 +293,13 @@ class SmartBGM(QWidget):
             self.close()
 
 class UI_SmartBGM(object):
-    def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("UI_SmartBGM"))
-        Form.resize(911, 627)
-        self.line_3 = QFrame(Form)
+    def setupUi(self, parent):
+        self.line_3 = QFrame(parent)
         self.line_3.setGeometry(QRect(10, 580, 891, 16))
         self.line_3.setFrameShape(QFrame.HLine)
         self.line_3.setFrameShadow(QFrame.Sunken)
         self.line_3.setObjectName(_fromUtf8("line_3"))
-        self.layoutWidget = QWidget(Form)
+        self.layoutWidget = QWidget(parent)
         self.layoutWidget.setGeometry(QRect(0, 0, 911, 621))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
@@ -495,25 +491,24 @@ class UI_SmartBGM(object):
         self.verticalLayout_3.setStretch(2, 10)
         self.verticalLayout_3.setStretch(3, 3)
 
-        self.retranslateUi(Form)
-        QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(parent)
+        QMetaObject.connectSlotsByName(parent)
 
-        self.mediaObjectVideo = phonon.Phonon.MediaObject(Form)  # 声明视频对象
-        self.mediaObjectVideo.stateChanged.connect(Form.stateChanged_video)  # 对象改变时，应该是注册事件，响应按钮
-        self.mediaObjectVideo.tick.connect(Form.timeLcd_video_tick)  # 连接到时间
+        self.mediaObjectVideo = phonon.Phonon.MediaObject(parent)  # 声明视频对象
+        self.mediaObjectVideo.stateChanged.connect(parent.stateChanged_video)  # 对象改变时，应该是注册事件，响应按钮
+        self.mediaObjectVideo.tick.connect(parent.timeLcd_video_tick)  # 连接到时间
 
-        self.mediaObjectAudio = phonon.Phonon.MediaObject(Form)  # 声明音频对象
-        self.mediaObjectAudio.stateChanged.connect(Form.stateChanged_audio)  # 对象改变时，应该是注册事件，响应按钮
-        self.mediaObjectAudio.tick.connect(Form.timeLcd_audio_tick)  # 连接到时间
+        self.mediaObjectAudio = phonon.Phonon.MediaObject(parent)  # 声明音频对象
+        self.mediaObjectAudio.stateChanged.connect(parent.stateChanged_audio)  # 对象改变时，应该是注册事件，响应按钮
+        self.mediaObjectAudio.tick.connect(parent.timeLcd_audio_tick)  # 连接到时间
 
         # 声明视频控制端行为  包含：播放，暂停，重新开始
-        self.playActionVideo = QAction(Form.style().standardIcon(QStyle.SP_MediaPlay), "Play",
-                                       Form, shortcut="Ctrl+P", enabled=False, triggered=self.mediaObjectVideo.play)
-        self.pauseActionVideo = QAction(Form.style().standardIcon(QStyle.SP_MediaPause), "Pause",
-                                        Form, shortcut="Ctrl+A", enabled=False, triggered=self.mediaObjectVideo.pause)
-        self.stopActionVideo = QAction(Form.style().standardIcon(QStyle.SP_MediaStop), "Stop",
-                                       Form, shortcut="Ctrl+S", enabled=False, triggered=self.mediaObjectVideo.stop)
-
+        self.playActionVideo = QAction(parent.style().standardIcon(QStyle.SP_MediaPlay), "Play",
+                                       parent, shortcut="Ctrl+P", enabled=False, triggered=self.mediaObjectVideo.play)
+        self.pauseActionVideo = QAction(parent.style().standardIcon(QStyle.SP_MediaPause), "Pause",
+                                        parent, shortcut="Ctrl+A", enabled=False, triggered=self.mediaObjectVideo.pause)
+        self.stopActionVideo = QAction(parent.style().standardIcon(QStyle.SP_MediaStop), "Stop",
+                                       parent, shortcut="Ctrl+S", enabled=False, triggered=self.mediaObjectVideo.stop)
         # 添加视频控制端   包含 播放， 暂停， 重新开始
         videobar = QToolBar()
         videobar.addAction(self.playActionVideo)
@@ -523,13 +518,12 @@ class UI_SmartBGM(object):
         self.horizontalLayout_control_video.addWidget(videobar)
 
         # 声明音频控制端行为  包含：播放，暂停，重新开始
-        self.playActionAudio = QAction(Form.style().standardIcon(QStyle.SP_MediaPlay), "Play", Form,
+        self.playActionAudio = QAction(parent.style().standardIcon(QStyle.SP_MediaPlay), "Play", parent,
                                        shortcut="Ctrl+Alt+P", enabled=False, triggered=self.mediaObjectAudio.play)
-        self.pauseActionAudio = QAction(Form.style().standardIcon(QStyle.SP_MediaPause), "Pause", Form,
+        self.pauseActionAudio = QAction(parent.style().standardIcon(QStyle.SP_MediaPause), "Pause", parent,
                                         shortcut="Ctrl+Alt+A", enabled=False, triggered=self.mediaObjectAudio.pause)
-        self.stopActionAudio = QAction(Form.style().standardIcon(QStyle.SP_MediaStop), "Stop", Form,
+        self.stopActionAudio = QAction(parent.style().standardIcon(QStyle.SP_MediaStop), "Stop", parent,
                                        shortcut="Ctrl+Alt+S", enabled=False, triggered=self.mediaObjectAudio.stop)
-
         # 添加音频控制端   包含 播放， 暂停， 重新开始
         audiobar = QToolBar()
         audiobar.addAction(self.playActionAudio)
@@ -544,7 +538,6 @@ class UI_SmartBGM(object):
         self.timeLcd_video = self.lcdNumber_video  # 将lcd数字灯赋给新的对象名
         self.timeLcd_video.setPalette(palette_videolcd)  # 设置配色方案
         self.timeLcd_video.display('00:00:00')  # 设置显示格式
-
         #  显示音频LED时间
         palette_audiolcd = QPalette()  # 声明调色板
         palette_audiolcd.setBrush(QPalette.Light, Qt.darkBlue)  # 设置刷子颜色
@@ -552,93 +545,28 @@ class UI_SmartBGM(object):
         self.timeLcd_audio.setPalette(palette_audiolcd)  # 设置配色方案
         self.timeLcd_audio.display('00:00')  # 设置显示格式
 
-        Form.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
-        Form.setFixedSize(Form.width(), Form.height())  # 禁止改变窗口的大小
+        parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
+        parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小
         #  添加播放控件
-        self.videoPlayer = myVideoWidget(Form)  # 声明VideoWidget控件
+        self.videoPlayer = myVideoWidget(parent)  # 声明VideoWidget控件
         self.horizontalLayout_videoplayer.addWidget(self.videoPlayer)  # 将videoPlayer加入到预留的布局里面
         # 设置播放控件能右键产生菜单的属性
         self.videoPlayer.setContextMenuPolicy(Qt.CustomContextMenu)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(_translate("Form", "Form", None))
-        self.btn_video_cutin.setText(_translate("Form", "切入点", None))
-        self.lbl_cutin.setText(_translate("Form", "00:00:00", None))
-        self.btn_video_cutout.setText(_translate("Form", "切出点", None))
-        self.lbl_cutout.setText(_translate("Form", "00:00:00", None))
-        self.btn_audio_cutin.setText(_translate("Form", "开始点", None))
-        self.lbl_audio_start.setText(_translate("Form", "00:00", None))
-        self.btn_tagsDialog.setText(_translate("Form", "配乐类型", None))
-        self.btn_playTogether.setText(_translate("Form", "同时播放", None))
-        self.btn_merge.setText(_translate("Form", "添加音频", None))
-        self.btn_save.setText(_translate("Form", "写入并保存", None))
+    def retranslateUi(self, parent):
+        parent.setObjectName(_fromUtf8("UI_SmartBGM"))
+        parent.resize(911, 627)
 
-class UI_SmartBGM_Auto(object):
-    def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("UI_SmartBGM_Auto"))
-        Form.resize(912, 633)
-        self.layoutWidget = QWidget(Form)
-        self.layoutWidget.setGeometry(QRect(0, 0, 911, 631))
-        self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
-        self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
-        self.verticalLayout_3.setMargin(0)
-        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
-        self.horizontalLayout_videoplayer = QHBoxLayout()
-        self.horizontalLayout_videoplayer.setObjectName(_fromUtf8("horizontalLayout_videoplayer"))
-        self.verticalLayout_3.addLayout(self.horizontalLayout_videoplayer)
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        self.horizontalLayout_control_video = QHBoxLayout()
-        self.horizontalLayout_control_video.setObjectName(_fromUtf8("horizontalLayout_control_video"))
-        self.horizontalLayout_2.addLayout(self.horizontalLayout_control_video)
-        self.line = QFrame(self.layoutWidget)
-        self.line.setFrameShape(QFrame.VLine)
-        self.line.setFrameShadow(QFrame.Sunken)
-        self.line.setObjectName(_fromUtf8("line"))
-        self.horizontalLayout_2.addWidget(self.line)
-        self.seekSlider_video = phonon.Phonon.SeekSlider(self.layoutWidget)
-        self.seekSlider_video.setObjectName(_fromUtf8("seekSlider_video"))
-        self.horizontalLayout_2.addWidget(self.seekSlider_video)
-        self.lcdNumber_video = QLCDNumber(self.layoutWidget)
-        self.lcdNumber_video.setNumDigits(8)
-        self.lcdNumber_video.setObjectName(_fromUtf8("lcdNumber_video"))
-        self.horizontalLayout_2.addWidget(self.lcdNumber_video)
-        self.line_2 = QFrame(self.layoutWidget)
-        self.line_2.setFrameShape(QFrame.VLine)
-        self.line_2.setFrameShadow(QFrame.Sunken)
-        self.line_2.setObjectName(_fromUtf8("line_2"))
-        self.horizontalLayout_2.addWidget(self.line_2)
-        self.volumeSlider = phonon.Phonon.VolumeSlider(self.layoutWidget)
-        self.volumeSlider.setObjectName(_fromUtf8("volumeSlider"))
-        self.horizontalLayout_2.addWidget(self.volumeSlider)
-        self.horizontalLayout_2.setStretch(0, 10)
-        self.horizontalLayout_2.setStretch(2, 40)
-        self.horizontalLayout_2.setStretch(3, 5)
-        self.horizontalLayout_2.setStretch(4, 20)
-        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.btn_autoMatch = QPushButton(self.layoutWidget)
-        self.btn_autoMatch.setObjectName(_fromUtf8("btn_autoMatch"))
-        self.horizontalLayout.addWidget(self.btn_autoMatch)
-        spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem1)
-        self.verticalLayout_3.addLayout(self.horizontalLayout)
-        spacerItem2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.verticalLayout_3.addItem(spacerItem2)
-        self.verticalLayout_3.setStretch(0, 50)
-        self.verticalLayout_3.setStretch(1, 2)
-        self.verticalLayout_3.setStretch(2, 2)
-        self.verticalLayout_3.setStretch(3, 1)
-
-        self.retranslateUi(Form)
-        QMetaObject.connectSlotsByName(Form)
-
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(_translate("Form", "Form", None))
-        self.btn_autoMatch.setText(_translate("Form", "一键配乐", None))
+        self.btn_video_cutin.setText(_translate("UI_SmartBGM", "切入点", None))
+        self.lbl_cutin.setText(_translate("UI_SmartBGM", "00:00:00", None))
+        self.btn_video_cutout.setText(_translate("UI_SmartBGM", "切出点", None))
+        self.lbl_cutout.setText(_translate("UI_SmartBGM", "00:00:00", None))
+        self.btn_audio_cutin.setText(_translate("UI_SmartBGM", "开始点", None))
+        self.lbl_audio_start.setText(_translate("UI_SmartBGM", "00:00", None))
+        self.btn_tagsDialog.setText(_translate("UI_SmartBGM", "配乐类型", None))
+        self.btn_playTogether.setText(_translate("UI_SmartBGM", "同时播放", None))
+        self.btn_merge.setText(_translate("UI_SmartBGM", "添加音频", None))
+        self.btn_save.setText(_translate("UI_SmartBGM", "写入并保存", None))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

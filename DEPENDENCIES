@@ -1,6 +1,7 @@
 [apt/yum]
-PyQt4
-PyQt4.phonon
+python-qt4
+python-qt4-phonon
+ffmpeg
 
 [pip]
 MySQLdb
