@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+import sys, os
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import phonon
@@ -18,19 +19,26 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QApplication.translate(context, text, disambig)
 
-class Dialog_Tags(QDialog):
+def QString2String(qStr):
+    return unicode(qStr.toUtf8(), 'utf-8', 'ignore')
+
+class Form_Tags(QDialog):
     def __init__(self, parent = None):
-        super(Dialog_Tags, self).__init__(parent)
+        super(Form_Tags, self).__init__()
+
+        # 绘制UI界面
         self.UI = UI_Tags()
         self.UI.setupUi(self)
 
+        # 绑定UI Widgets事件
+        self.UI.btn_tagOK.clicked.connect(self.btn_tagOK_click)
+
         self.addCheckBox()
-        # 绑定确定按钮，返回选中的标签信息
-        self.connect(self.UI.btn_tag_ok, SIGNAL('clicked()'), self.getTags)
+        self.tagsSelected = []
 
     def addCheckBox(self):
         self.checkBoxSet = []
-        self.checkBoxSet.append(self.UI.checkBox1)
+        self.checkBoxSet.append(self.UI.checkBox)
         self.checkBoxSet.append(self.UI.checkBox2)
         self.checkBoxSet.append(self.UI.checkBox3)
         self.checkBoxSet.append(self.UI.checkBox4)
@@ -49,6 +57,7 @@ class Dialog_Tags(QDialog):
         self.checkBoxSet.append(self.UI.checkBox17)
         self.checkBoxSet.append(self.UI.checkBox18)
         self.checkBoxSet.append(self.UI.checkBox19)
+        self.checkBoxSet.append(self.UI.checkBox20)
         self.checkBoxSet.append(self.UI.checkBox21)
         self.checkBoxSet.append(self.UI.checkBox22)
         self.checkBoxSet.append(self.UI.checkBox23)
@@ -66,39 +75,27 @@ class Dialog_Tags(QDialog):
         self.checkBoxSet.append(self.UI.checkBox35)
         self.checkBoxSet.append(self.UI.checkBox36)
 
-    def getTags(self):
-        checkBoxNum = 36
-        queryTags = []
-        for i in range(0,checkBoxNum-1):
-            if self.checkBoxSet[i].isChecked() == True:
-                queryTags.append(self.checkBoxSet[i].text().toUtf8())
-        return queryTags
-
-    @staticmethod
-    def GetTags(parent = None):
-        dialog = Dialog_Tags(parent)
-        result = dialog.exec_()
-        tags = dialog.getTags()
-        return (tags, result == QDialog.Accepted)
+    def btn_tagOK_click(self):
+        self.tagsSelected = []
+        for chkbox in self.checkBoxSet:
+            if chkbox.isChecked() == True:
+                self.tagsSelected.append(QString2String(chkbox.text()))
+        self.hide()
 
 class UI_Tags(object):
-    def setupUi(self, Form):
-        Form.setWindowTitle(u'配乐标签')
-        Form.setObjectName(_fromUtf8("Form_TagSelector"))
-        Form.resize(336, 463)
-
-        self.groupBox_1 = QGroupBox(Form)
-        self.groupBox_1.setGeometry(QRect(10, 10, 111, 261))
-        self.groupBox_1.setObjectName(_fromUtf8("groupBox_1"))
-        self.layoutWidget = QWidget(self.groupBox_1)
+    def setupUi(self, parent):
+        self.groupBox = QGroupBox(parent)
+        self.groupBox.setGeometry(QRect(10, 10, 111, 261))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.layoutWidget = QWidget(self.groupBox)
         self.layoutWidget.setGeometry(QRect(10, 20, 89, 229))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout = QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setMargin(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.checkBox1 = QCheckBox(self.layoutWidget)
-        self.checkBox1.setObjectName(_fromUtf8("checkBox1"))
-        self.verticalLayout.addWidget(self.checkBox1)
+        self.checkBox = QCheckBox(self.layoutWidget)
+        self.checkBox.setObjectName(_fromUtf8("checkBox"))
+        self.verticalLayout.addWidget(self.checkBox)
         self.checkBox2 = QCheckBox(self.layoutWidget)
         self.checkBox2.setObjectName(_fromUtf8("checkBox2"))
         self.verticalLayout.addWidget(self.checkBox2)
@@ -123,7 +120,7 @@ class UI_Tags(object):
         self.checkBox9 = QCheckBox(self.layoutWidget)
         self.checkBox9.setObjectName(_fromUtf8("checkBox9"))
         self.verticalLayout.addWidget(self.checkBox9)
-        self.groupBox_2 = QGroupBox(Form)
+        self.groupBox_2 = QGroupBox(parent)
         self.groupBox_2.setGeometry(QRect(20, 270, 101, 131))
         self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
         self.layoutWidget1 = QWidget(self.groupBox_2)
@@ -144,7 +141,7 @@ class UI_Tags(object):
         self.checkBox13 = QCheckBox(self.layoutWidget1)
         self.checkBox13.setObjectName(_fromUtf8("checkBox13"))
         self.verticalLayout_2.addWidget(self.checkBox13)
-        self.groupBox_3 = QGroupBox(Form)
+        self.groupBox_3 = QGroupBox(parent)
         self.groupBox_3.setGeometry(QRect(130, 140, 101, 261))
         self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
         self.layoutWidget2 = QWidget(self.groupBox_3)
@@ -180,7 +177,7 @@ class UI_Tags(object):
         self.checkBox26 = QCheckBox(self.layoutWidget2)
         self.checkBox26.setObjectName(_fromUtf8("checkBox26"))
         self.verticalLayout_3.addWidget(self.checkBox26)
-        self.groupBox_4 = QGroupBox(Form)
+        self.groupBox_4 = QGroupBox(parent)
         self.groupBox_4.setGeometry(QRect(130, 10, 101, 131))
         self.groupBox_4.setTitle(_fromUtf8(""))
         self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
@@ -202,7 +199,7 @@ class UI_Tags(object):
         self.checkBox17 = QCheckBox(self.layoutWidget3)
         self.checkBox17.setObjectName(_fromUtf8("checkBox17"))
         self.verticalLayout_4.addWidget(self.checkBox17)
-        self.groupBox_6 = QGroupBox(Form)
+        self.groupBox_6 = QGroupBox(parent)
         self.groupBox_6.setGeometry(QRect(240, 10, 81, 291))
         self.groupBox_6.setObjectName(_fromUtf8("groupBox_6"))
         self.layoutWidget4 = QWidget(self.groupBox_6)
@@ -241,60 +238,61 @@ class UI_Tags(object):
         self.checkBox36 = QCheckBox(self.layoutWidget4)
         self.checkBox36.setObjectName(_fromUtf8("checkBox36"))
         self.verticalLayout_6.addWidget(self.checkBox36)
+        self.btn_tagOK = QPushButton(parent)
+        self.btn_tagOK.setGeometry(QRect(130, 420, 93, 28))
+        self.btn_tagOK.setObjectName(_fromUtf8("btn_tag_ok"))
 
-        self.btn_tag_ok = QPushButton(Form)
-        self.btn_tag_ok.setGeometry(QRect(130, 420, 93, 28))
-        self.btn_tag_ok.setObjectName(_fromUtf8("btn_tag_ok"))
+        self.retranslateUi(parent)
+        QMetaObject.connectSlotsByName(parent)
 
-        self.retranslateUi(Form)
-        QMetaObject.connectSlotsByName(Form)
+    def retranslateUi(self, parent):
+        parent.setWindowTitle(u'配乐标签')
+        parent.setWindowIcon(QIcon(r'./icon/SmartBGM.ico'))
+        parent.setObjectName(_fromUtf8("UI_Tags"))
+        parent.resize(336, 463)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(_translate("Form", "Form", None))
+        self.groupBox.setTitle(_translate("UI_Tags", "风格", None))
+        self.checkBox.setText(_translate("UI_Tags", "流行摇滚", None))
+        self.checkBox2.setText(_translate("UI_Tags", "乡村民谣", None))
+        self.checkBox3.setText(_translate("UI_Tags", "爵士蓝调", None))
+        self.checkBox4.setText(_translate("UI_Tags", "金属朋克", None))
+        self.checkBox5.setText(_translate("UI_Tags", "轻音乐", None))
+        self.checkBox6.setText(_translate("UI_Tags", "古典", None))
+        self.checkBox7.setText(_translate("UI_Tags", "国风", None))
+        self.checkBox8.setText(_translate("UI_Tags", "电子", None))
+        self.checkBox9.setText(_translate("UI_Tags", "说唱", None))
 
-        self.groupBox_1.setTitle(_translate("Form", "风格", None))
-        self.checkBox1.setText(_translate("Form", "流行摇滚", None))
-        self.checkBox2.setText(_translate("Form", "乡村民谣", None))
-        self.checkBox3.setText(_translate("Form", "爵士蓝调", None))
-        self.checkBox4.setText(_translate("Form", "金属朋克", None))
-        self.checkBox5.setText(_translate("Form", "轻音乐", None))
-        self.checkBox6.setText(_translate("Form", "古典", None))
-        self.checkBox7.setText(_translate("Form", "国风", None))
-        self.checkBox8.setText(_translate("Form", "电子", None))
-        self.checkBox9.setText(_translate("Form", "说唱", None))
+        self.groupBox_2.setTitle(_translate("UI_Tags", "场景", None))
+        self.checkBox10.setText(_translate("UI_Tags", "清晨", None))
+        self.checkBox11.setText(_translate("UI_Tags", "下午茶", None))
+        self.checkBox12.setText(_translate("UI_Tags", "夜晚", None))
+        self.checkBox13.setText(_translate("UI_Tags", "学习工作", None))
+        self.checkBox14.setText(_translate("UI_Tags", "运动旅行", None))
+        self.checkBox15.setText(_translate("UI_Tags", "婚礼庆典", None))
+        self.checkBox16.setText(_translate("UI_Tags", "影视", None))
+        self.checkBox17.setText(_translate("UI_Tags", "ACG", None))
 
-        self.groupBox_2.setTitle(_translate("Form", "场景", None))
-        self.checkBox10.setText(_translate("Form", "清晨", None))
-        self.checkBox11.setText(_translate("Form", "下午茶", None))
-        self.checkBox12.setText(_translate("Form", "夜晚", None))
-        self.checkBox13.setText(_translate("Form", "学习工作", None))
+        self.groupBox_3.setTitle(_translate("UI_Tags", "情感", None))
+        self.checkBox18.setText(_translate("UI_Tags", "清新明媚", None))
+        self.checkBox19.setText(_translate("UI_Tags", "兴奋动感", None))
+        self.checkBox20.setText(_translate("UI_Tags", "治愈感动", None))
+        self.checkBox21.setText(_translate("UI_Tags", "怀旧伤感", None))
+        self.checkBox22.setText(_translate("UI_Tags", "安静放松", None))
+        self.checkBox23.setText(_translate("UI_Tags", "快乐", None))
+        self.checkBox24.setText(_translate("UI_Tags", "浪漫", None))
+        self.checkBox25.setText(_translate("UI_Tags", "孤独", None))
+        self.checkBox26.setText(_translate("UI_Tags", "思念", None))
 
-        self.groupBox_3.setTitle(_translate("Form", "情感", None))
-        self.checkBox14.setText(_translate("Form", "运动旅行", None))
-        self.checkBox15.setText(_translate("Form", "婚礼庆典", None))
-        self.checkBox16.setText(_translate("Form", "影视", None))
-        self.checkBox17.setText(_translate("Form", "ACG", None))
-        self.checkBox18.setText(_translate("Form", "清新明媚", None))
-        self.checkBox19.setText(_translate("Form", "兴奋动感", None))
-        self.checkBox20.setText(_translate("Form", "治愈感动", None))
-        self.checkBox21.setText(_translate("Form", "怀旧伤感", None))
-        self.checkBox22.setText(_translate("Form", "安静放松", None))
-        self.checkBox23.setText(_translate("Form", "快乐", None))
-        self.checkBox24.setText(_translate("Form", "浪漫", None))
-        self.checkBox25.setText(_translate("Form", "孤独", None))
-        self.checkBox26.setText(_translate("Form", "思念", None))
+        self.groupBox_6.setTitle(_translate("UI_Tags", "乐器", None))
+        self.checkBox27.setText(_translate("UI_Tags", "钢琴", None))
+        self.checkBox28.setText(_translate("UI_Tags", "弦乐组", None))
+        self.checkBox29.setText(_translate("UI_Tags", "管乐组", None))
+        self.checkBox30.setText(_translate("UI_Tags", "室内乐", None))
+        self.checkBox31.setText(_translate("UI_Tags", "电吉他", None))
+        self.checkBox32.setText(_translate("UI_Tags", "口琴", None))
+        self.checkBox33.setText(_translate("UI_Tags", "古筝", None))
+        self.checkBox34.setText(_translate("UI_Tags", "二胡", None))
+        self.checkBox35.setText(_translate("UI_Tags", "琵琶", None))
+        self.checkBox36.setText(_translate("UI_Tags", "箫笛", None))
 
-        self.groupBox_6.setTitle(_translate("Form", "乐器", None))
-        self.checkBox27.setText(_translate("Form", "钢琴", None))
-        self.checkBox28.setText(_translate("Form", "弦乐组", None))
-        self.checkBox29.setText(_translate("Form", "管乐组", None))
-        self.checkBox30.setText(_translate("Form", "室内乐", None))
-        self.checkBox31.setText(_translate("Form", "电吉他", None))
-        self.checkBox32.setText(_translate("Form", "口琴", None))
-        self.checkBox33.setText(_translate("Form", "古筝", None))
-        self.checkBox34.setText(_translate("Form", "二胡", None))
-        self.checkBox35.setText(_translate("Form", "琵琶", None))
-        self.checkBox36.setText(_translate("Form", "箫笛", None))
-
-        self.btn_tag_ok.setText(_translate("Form", "确定", None))
-
+        self.btn_tagOK.setText(_translate("UI_Tags", "确定", None))
