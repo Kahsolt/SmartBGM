@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #==========================
 #  Name:        SmartBGM_Auto
-#  Author:      lincoln; and kahsolt fucked it up
+#  Author:      llk2why; and kahsolt fucked it up
 #  Time:        2017/04/17
 #  Desciption:  SmartBGM auto mode main editor
 
@@ -11,7 +11,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import phonon
 
-from TagSelector import TagSelector
 from Slicer import Slicer
 from Analyzer import Analyzer
 from Matcher import Matcher

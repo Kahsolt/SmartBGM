@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #==========================
 #  Name:        SmartBGM
-#  Author:      lincoln; and kahsolt fucked it up
+#  Author:      llk2why; and kahsolt fucked it up
 #  Time:        2017/04/16
 #  Desciption:  SmartBGM manual mode main editor
 

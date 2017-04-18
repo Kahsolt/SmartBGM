@@ -22,8 +22,7 @@ SmartBGM/		# project root
 	Remixer.py		# [Module]
 
 	TagSelector.py  # (UI) Tag Seletor Form
-	SmartBGM.py		# (UI) Main Editor Form
-	run.bat			# laucher shortcut for Windows OS
+	SmartBGM.py		# (UI) Main Editor Form ; main laucher
 
 [Classical Program Workflow]
 
