@@ -1,5 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+#==========================
+#  Name:        TagSelector
+#  Author:      llk2why; and kahsolt fucked it up
+#  Time:        2017/04/16
+#  Desciption:  Tag Selector in manual mode
 
 import sys, os
 from PyQt4.QtCore import *
@@ -19,6 +24,9 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QApplication.translate(context, text, disambig)
 
+# Functions
+def _String2Utf8(s):
+    return s.encode('utf8')
 def QString2String(qStr):
     return unicode(qStr.toUtf8(), 'utf-8', 'ignore')
 
@@ -79,7 +87,7 @@ class TagSelector(QDialog):
         self.tagsSelected = []
         for chkbox in self.checkBoxSet:
             if chkbox.isChecked() == True:
-                self.tagsSelected.append(QString2String(chkbox.text()))
+                self.tagsSelected.append(_String2Utf8(QString2String(chkbox.text())))
         self.hide()
 
 class UI_TagSelector(object):

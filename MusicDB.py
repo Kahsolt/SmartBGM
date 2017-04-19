@@ -7,6 +7,16 @@
 #  Desciption:  Translate MySQLDB to localDB
 
 # Configuration
+MUSIC_DIR = r'./music/'
+MUSIC_VOC=[
+    '流行摇滚', '乡村民谣', '爵士蓝调', '金属朋克', '轻音乐', '古典', '国风', '电子', '说唱',
+    '清晨', '下午茶', '夜晚', '学习工作', '运动旅行', '婚礼庆典', '影视', 'ACG',
+    '清新明媚', '兴奋动感', '治愈感动', '怀旧伤感', '安静放松', '快乐', '浪漫', '孤独', '思念',
+    '弦乐组', '管乐组', '室内乐', '钢琴', '电吉他', '口琴', '古筝', '二胡', '琵琶', '箫笛'
+]
+MUSIC_AUX_SCENE=[
+    '运动旅行', '婚礼庆典',
+]
 DB_LOCAL_FILE = r'MusicDB.db'
 DB_MYSQL_HOST = r'kahsolt.cc'
 DB_MYSQL_USER = r'root'
@@ -96,7 +106,7 @@ class MusicDB():
         try:
             self.dbText.write(self.dbMySQL.getMusic())
         except:
-            print('MusicDBAdmin: update() failed')
+            print('MusicDB: update() failed')
 
     def list(self):
         self.dbText.read()
@@ -107,7 +117,7 @@ def main():
     #
     # from MusicDB import MusicDB
 
-    # 1.Create a MusicDBAdmin object
+    # 1.Create a MusicDB object
     #   use it just like apt
     #
     musicDB = MusicDB()

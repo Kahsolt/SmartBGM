@@ -41,7 +41,7 @@ class SmartBGM(QWidget):
         super(SmartBGM, self).__init__()
 
         # 绘制UI界面
-        self.setWindowTitle(u'SmartBGM')
+        self.setWindowTitle(r'SmartBGM')
         self.setWindowIcon(QIcon(r'./icon/SmartBGM.ico'))
         self.UI = UI_SmartBGM()
         self.UI.setupUi(self)
@@ -51,8 +51,8 @@ class SmartBGM(QWidget):
         self.connect(self.UI.btn_video_cutin, SIGNAL('clicked()'), self.btn_videoCutIn_click)
         self.connect(self.UI.btn_video_cutout, SIGNAL('clicked()'), self.btn_videoCutOut_click)
         self.connect(self.UI.btn_audio_cutin, SIGNAL('clicked()'), self.btn_audioCutIn_click)
-        # self.UI.cmb_music.activated.connect(self.comboBoxItemClick)
-        self.connect(self.UI.cmb_music, SIGNAL('currentIndexChanged()'), self.cmb_music_click)
+        self.UI.cmb_music.activated.connect(self.cmb_music_click)
+        # self.connect(self.UI.cmb_music, SIGNAL('activated()'), self.cmb_music_click)
         self.connect(self.UI.btn_tagsDialog, SIGNAL('clicked()'), self.btn_tagsDialog_click)
         self.connect(self.UI.btn_playTogether, SIGNAL('clicked()'), self.btn_playTogether_click)
         self.connect(self.UI.btn_merge, SIGNAL('clicked()'), self.btn_merge_click)
@@ -61,7 +61,7 @@ class SmartBGM(QWidget):
         # 子控件
         self.tagSelector = TagSelector(self)
         # 音频列表
-        self.audiolist = {}     # will be deprecated
+        self.audiolist = {}
 
         # 媒体文件路径: str-utf8
         self.videofile=None
@@ -101,7 +101,7 @@ class SmartBGM(QWidget):
         if not file:
             return
 
-        fpath, fname = os.path.split(file)
+        fname = os.path.splitext(os.path.split(file)[1])[0]
         self.audiofile = file
         self.audiolist[fname] = file
         self.UI.cmb_music.clear()
@@ -174,7 +174,17 @@ class SmartBGM(QWidget):
     def btn_tagsDialog_click(self):
         self.tagSelector.exec_()    # Block main form thread
         tags = self.tagSelector.tagsSelected
-        print '[tagsDialog] Tags recieved: ' + (len(tags)>0 and ','.join(tags) or '<None>')
+        print '[tagsDialog] Tags received: ' + (len(tags) > 0 and ','.join(tags) or '<None>')
+
+        matcher = Matcher(tags)
+        songs = matcher.search()   # want less, to use match
+        self.UI.cmb_music.clear()
+        self.audiolist.clear()
+        for song in songs:
+            title = os.path.splitext(os.path.split(song)[1])[0]
+            self.audiolist[title] = song
+            self.UI.cmb_music.addItem(title)
+
     # 一起播放按钮
     def btn_playTogether_click(self):
         if self.videofile == None:
@@ -199,25 +209,24 @@ class SmartBGM(QWidget):
             self.err(6)
             return
 
-        #remixer = Remixer(self.videofile, self.audiofile)
-        #remixer.timespan_video = [self.cutinTime_video, self.cutoutTime_video]
-        #remixer.timespan_audio = [self.cutinTime_audio]
-        #outfile = remixer.remix()
-        #print '[merge_click] Outfile saved to: '+ outfile
-        print '[merge] Merged!'
+        remixer = Remixer(self.videofile, self.audiofile)
+        remixer.timespan_video = [self.cutinTime_video, self.cutoutTime_video]
+        remixer.timespan_audio = [self.cutinTime_audio, 150]
+        outfile = remixer.remix()
+        print '[merge] Soundtrack Merged!'
+        print '[merge] Outfile saved to: ' + outfile
     # 保存按钮
     def btn_save_click(self):
-        print '[save] Saved to path ... !'
-        pass
         # outfile = self.remixer.writeout()
-        # print '[save_click] Outfile saved to: '+ outfile
+        # print '[save] Outfile saved to: '+ outfile
+        # TODO: do the mixer.save!
+        print '[save] Saved to path ... !'
 
     # 音乐切换下拉框
     def cmb_music_click(self):
         curMusic = QString2String(self.UI.cmb_music.currentText())
-        print '[music_click] Current Music: ' + curMusic
         file = self.audiolist[curMusic]
-        print '[music_click] Filename: ' + file
+        print '[music_click] Current Music: ' + file
 
         self.audiofile = file
         # 音频输出
@@ -545,8 +554,6 @@ class UI_SmartBGM(object):
         self.timeLcd_audio.setPalette(palette_audiolcd)  # 设置配色方案
         self.timeLcd_audio.display('00:00')  # 设置显示格式
 
-        parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
-        parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小
         #  添加播放控件
         self.videoPlayer = myVideoWidget(parent)  # 声明VideoWidget控件
         self.horizontalLayout_videoplayer.addWidget(self.videoPlayer)  # 将videoPlayer加入到预留的布局里面
@@ -556,16 +563,18 @@ class UI_SmartBGM(object):
     def retranslateUi(self, parent):
         parent.setObjectName(_fromUtf8("UI_SmartBGM"))
         parent.resize(911, 627)
+        parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
+        parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小
 
-        self.btn_video_cutin.setText(_translate("UI_SmartBGM", "切入点", None))
+        self.btn_video_cutin.setText(_translate("UI_SmartBGM", "视频切入点", None))
         self.lbl_cutin.setText(_translate("UI_SmartBGM", "00:00:00", None))
-        self.btn_video_cutout.setText(_translate("UI_SmartBGM", "切出点", None))
+        self.btn_video_cutout.setText(_translate("UI_SmartBGM", "视频切出点", None))
         self.lbl_cutout.setText(_translate("UI_SmartBGM", "00:00:00", None))
-        self.btn_audio_cutin.setText(_translate("UI_SmartBGM", "开始点", None))
+        self.btn_audio_cutin.setText(_translate("UI_SmartBGM", "音频切入点", None))
         self.lbl_audio_start.setText(_translate("UI_SmartBGM", "00:00", None))
         self.btn_tagsDialog.setText(_translate("UI_SmartBGM", "配乐类型", None))
         self.btn_playTogether.setText(_translate("UI_SmartBGM", "同时播放", None))
-        self.btn_merge.setText(_translate("UI_SmartBGM", "添加音频", None))
+        self.btn_merge.setText(_translate("UI_SmartBGM", "添加音轨", None))
         self.btn_save.setText(_translate("UI_SmartBGM", "写入并保存", None))
 
 if __name__ == '__main__':
