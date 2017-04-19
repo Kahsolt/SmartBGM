@@ -2,8 +2,9 @@
 python-qt4
 python-qt4-phonon
 ffmpeg
+mysql.connector
 
 [pip]
-MySQLdb
 moviepy
 pydub
+
