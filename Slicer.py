@@ -46,7 +46,7 @@ class Slicer:
         self.ImgperSecond="fps="+str(fps_rate)
 
     def slice(self):
-        self.CommandP2=self.videoName
+        self.CommandP2='"'+self.videoName+'"'
         self.CommandP4=self.ImgperSecond
         Command=self.CommandP1+self.CommandP2+self.CommandP3+self.CommandP4+self.CommandP5
         p = Popen(args=Command,shell=True)
@@ -58,14 +58,14 @@ class Slicer:
 def main():
     # 1.Construct
     # slicer = Slicer('path_to_video',sample_rate)
-    slicer=Slicer(path_to_video='test/cononL.mp4')
+    slicer=Slicer(path_to_video='test/campus.flv')
     
     #cmd=s1.gettheCommand()
     #p = Popen(args=cmd,shell=True)
 
     # 2.Configure
     # slicer.sample_rate = 1    # extract one frame per second
-    slicer.fps_rate(0.1)
+    slicer.fps_rate(1)
 
     # 3.Call methods
     # path_to_frame_slices_dir = slicer.slice()
