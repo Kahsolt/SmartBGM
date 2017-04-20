@@ -17,25 +17,21 @@ from MusicDB import MusicDB
 class Matcher:
 
     def __init__(self, tags_video):
+        self.nrank = 5
         self.musicDB = MusicDB()
-        pass
+        self.tags_video = tags_video
 
-    def remix(self):
-        pass
+    def match(self):
         # THIS MODULE MUST QUERY MusicDB!!!
         return 'path_to_outfile'
 
 
 # Main Entrance
 def main():
-    # 1.Construct
-    # matcher = Matcher(tags_video)
 
-    # 2.Configure
-    # matcher.mode = ??     # if we have multiple selection algorithms
-
-    # 3.Call methods
-    # path_to_audio = matcher.match()
+    tags_video = [(818, 1.2973), (733, 1.2946), (815, 0.9228999999999999), (111, 0.6920000000000001), (904, 0.45990000000000003)]
+    matcher = Matcher(tags_video)
+    merge_tags = matcher.match()
 
     pass
 
