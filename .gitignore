@@ -4,3 +4,4 @@ tmp/*
 *.pyc
 *.json
 connector.py
+test.py

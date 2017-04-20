@@ -105,7 +105,7 @@ class Analyzer:
             for i in img_data:
                 print i
 
-        print '[recognition]: video recognized'
+        print '[Analyzer.py recognition]: video recognized'
         return img_data
 
 
@@ -119,16 +119,48 @@ class Analyzer:
             for j in i:
                 img_unit[j['id']] += float(j['pos'])
 
+        #给字典排序,输出排序后的元组结构（id,pos_sum）
         img_unit = sorted(img_unit.items(),key= lambda d:d[1],\
                           reverse=True)[:self.nrank]
-        print '[merge]: video tags merged'
-        return img_unit
+
+        # 打开合并分类文件 RecognitionDB.txt
+        f = open("RecognitionDB.txt")
+        line = f.readline()
+        idset = []
+        while line:
+            item = []
+            line = line.split('\t')
+
+            item.append(line[0])
+            item.append(line[2])
+            item.append(line[3][:-2])
+
+            line = f.readline()
+
+            idset.append(item)
+        f.close()
+
+        res = []
+
+        for tup in img_unit:
+            for item in idset:
+                if int(tup[0])>=int(item[1]) and int(tup[0])<=int(item[2]):
+                    # toptup.append(item[0])
+                    # toptup.append(tup[0])
+                    # toptup.append(tup[1])
+                    toptup = (item[0],tup[0],tup[1])
+                    res.append(toptup)
+                    break
+
+
+        print '[Analyzer.py  merge]: video tags merged'
+        return res
 
 
     def analyze(self): #
         video_tags= self.recognition()
         collection = self.merge(video_tags)
-        print collection
+        # print collection
         return collection
 
 
@@ -140,10 +172,9 @@ def main():
     path_to_frame_slices_dir = '/home/lincoln/Desktop/SmartBGM/tmp/img'
     analyzer = Analyzer(path_to_frame_slices_dir)
     collection = analyzer.analyze()
+    for item in collection:
+        print item[0],item[1:]
 
-    # for i in range(len(collection)):
-    #     print json.dumps(collection[i], encoding="UTF-8", ensure_ascii=False)
-    # print json.dumps(collection, encoding="UTF-8", ensure_ascii=False)
 
 def unittest():
     pass
