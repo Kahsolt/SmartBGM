@@ -62,6 +62,7 @@ class SmartBGM(QWidget):
         self.tagSelector = TagSelector(self)
         # 音频列表
         self.audiolist = {}
+        self.todoList = []
 
         # 媒体文件路径: str-utf8
         self.videofile=None
@@ -209,18 +210,22 @@ class SmartBGM(QWidget):
             self.err(6)
             return
 
-        remixer = Remixer(self.videofile, self.audiofile)
-        remixer.timespan_video = [self.cutinTime_video, self.cutoutTime_video]
-        remixer.timespan_audio = [self.cutinTime_audio, 150]
-        outfile = remixer.remix()
-        print '[merge] Soundtrack Merged!'
-        print '[merge] Outfile saved to: ' + outfile
+        cutinTime_video = self.cutinTime_video.hour()*3600+self.cutinTime_video.minute()*60+self.cutinTime_video.second()
+        cutoutTime_video = self.cutoutTime_video.hour()*3600+self.cutoutTime_video.minute()*60+self.cutoutTime_video.second()
+        cutinTime_audio = self.cutinTime_audio.minute()*60+self.cutinTime_audio.second()
+        timespan_video = (cutinTime_video, cutoutTime_video - cutinTime_video)
+        timespan_audio = (cutinTime_audio, cutoutTime_video - cutinTime_video)
+        audiofile = self.audiofile
+        self.todoList.append((audiofile, timespan_video, timespan_audio))
+        print '[merge] Merge task added!'
     # 保存按钮
     def btn_save_click(self):
-        # outfile = self.remixer.writeout()
-        # print '[save] Outfile saved to: '+ outfile
-        # TODO: do the mixer.save!
-        print '[save] Saved to path ... !'
+        remixer = Remixer(self.videofile)
+        for todo in self.todoList:
+            remixer.mix(todo[0], todo[1], todo[2])
+        outfile = remixer.remix()
+        self.todoList = []
+        print '[save] Outfile saved to: ' + outfile
 
     # 音乐切换下拉框
     def cmb_music_click(self):

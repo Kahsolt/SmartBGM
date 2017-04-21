@@ -172,7 +172,6 @@ class SmartBGM_Auto(QWidget):
         if keyEvent.key() == Qt.Key_Escape:
             self.close()
 
-
 class UI_SmartBGM_Auto(object):
     def setupUi(self, parent):
         self.layoutWidget = QWidget(parent)
