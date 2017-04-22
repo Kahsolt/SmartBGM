@@ -86,6 +86,7 @@ class SmartBGM_Auto(QWidget):
 
         # 媒体文件路径: str-utf8
         self.videofile = None
+        self.videofileLength = None
         # 媒体当前播放至的时间: QTime
         self.videoTime = None
 
@@ -100,6 +101,7 @@ class SmartBGM_Auto(QWidget):
             return
 
         self.videofile = file
+        self.videofileLength = 'TODO: how to get videofileLength!!';
         # 视频输出
         self.UI.mediaObjectVideo.setCurrentSource(phonon.Phonon.MediaSource(file))  # 加载当前的源文件
         phonon.Phonon.createPath(self.UI.mediaObjectVideo, self.UI.videoPlayer)  # 将视频对象和播放控件关联起来
@@ -129,17 +131,39 @@ class SmartBGM_Auto(QWidget):
     # 一键配乐
     def btn_autoMatch_click(self):
         slicer = Slicer(self.videofile)
-        # slicer.sample_rate = 1
+        slicer.fps_rate(0.1)
         path_to_frame_slices_dir = slicer.slice()
+        print '[slice:1] Sliced frames in ' + path_to_frame_slices_dir
+
         analyzer = Analyzer(path_to_frame_slices_dir)
-        video_tags = analyzer.analyze()
+        video_tags = []
+        raw_tags = analyzer.analyze()
+        for tag in raw_tags:
+            video_tags.append(tag[0])
+        if self.UI.cmb_scene.currentText() != '':
+            video_tags.append(self.UI.cmb_scene.currentText())
+        print '[analyze:2] Tags are ' + ','.join(video_tags)
+
         matcher = Matcher(video_tags)
-        path_to_audio = matcher.match()
-        remixer = Remixer(self.videofile, path_to_audio)
-        remixer.timespan_video = [100, 300]
-        remixer.timespan_audio = [500, 900]
-        path_to_outfile = remixer.remix()
-        print '[autoMatch]: Done! Outfile saved to ' + path_to_outfile
+        songs = matcher.match()
+        print '[match:3] ' + str(len(songs)) + ' songs available'
+
+        remixer = Remixer(self.videofile)
+        ptrVideo = 0
+        for song in songs:
+            if ptrVideo < self.videofileLength:
+                restTimespan = self.videofileLength - ptrVideo
+                usedTime = (song[1] >= restTimespan) and restTimespan or song[1]
+                remixer.mix(song[0], (ptrVideo, song[1]), (0, song[1]))
+                ptrVideo += usedTime
+                print '[merge:4] Mix task ["' + \
+                      str(song[0]) + '": ' + \
+                      str(ptrVideo) + ', ' + \
+                      str(usedTime) + '] executes!'
+            else:
+                break
+        remixer.remix()
+        print '[remix:5] SmartBGM auto mode done!'
 
     # 多媒体状态改变事件处理
     def stateChanged_video(self, newState):

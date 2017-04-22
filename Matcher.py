@@ -8,7 +8,7 @@
 
 # Configuration
 MUSIC_ITEM_MAX = 15
-MUSIC_MATCH_THRESHOLD = 0.5
+MUSIC_MATCH_THRESHOLD = 0.25
 
 # Imports
 import random
@@ -33,6 +33,8 @@ class DB:
                     else:
                         song = {}
                         song['title'] = line.strip('\n')
+                        line = fdb.readline()
+                        song['length'] = int(line.strip('\n'))
                         line = fdb.readline()
                         song['tags'] = line.strip('\n')
                         self.dictMusic.append(song)
@@ -63,7 +65,8 @@ class DB:
         res = []
         for song in self.dictMusic:
             if self._calcMatchScore(tags, song['tags']) == 1.0:
-                res.append(MUSIC_DIR + _Utf82String(song['title']))
+                s = (MUSIC_DIR + _Utf82String(song['title']), song['length'])
+                res.append(s)
         return res
 
     def rank(self, tags):
@@ -71,7 +74,8 @@ class DB:
         res = []
         for song in self.dictMusic:
             if self._calcMatchScore(tags, song['tags']) > MUSIC_MATCH_THRESHOLD:
-                res.append(MUSIC_DIR + _Utf82String(song['title']))
+                s = (MUSIC_DIR + _Utf82String(song['title']), song['length'])
+                res.append(s)
         #### another method: pick a certain number from the top
         # res = {}
         # for song in self.dictMusic:
@@ -103,7 +107,7 @@ def main():
     #   use it just like apt/aptitude
     #
     matcher = Matcher(['安静放松', '下午茶'])
-    searcher = Matcher(['清晨', '学习工作', '安静放松', '下午茶'])
+    searcher = Matcher(['清晨', '安静放松', '下午茶'])
 
     # 2.Search for music using the given tag list
     #   invalid tags will rise a warning and be omitted

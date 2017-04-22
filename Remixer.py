@@ -120,7 +120,6 @@ class Remixer:
 
         # 音频长度大于视频的情况
         else:
-            print 'else'
             end_point = audioTime + t3
             audio_adapter = audio_cut[audioTime * 1000:end_point * 1000]
             # audio_adapter.export('audio_adapter.mp3')

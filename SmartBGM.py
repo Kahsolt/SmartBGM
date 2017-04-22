@@ -61,19 +61,21 @@ class SmartBGM(QWidget):
         # 子控件
         self.tagSelector = TagSelector(self)
         # 音频列表
-        self.audiolist = {}
+        self.audiolist = {} # {'title':('path', 300)}
         self.todoList = []
 
         # 媒体文件路径: str-utf8
-        self.videofile=None
-        self.audiofile=None
+        self.videofile = None
+        self.videofileLength = None
+        self.audiofile = None
+        self.audiofileLength = None
         # 媒体当前播放至的时间: QTime
-        self.videoTime=None
-        self.audioTime=None
+        self.videoTime = None
+        self.audioTime = None
         # 媒体合并的三个关键参数: QTime
-        self.cutinTime_video=None
-        self.cutoutTime_video=None
-        self.cutinTime_audio=None
+        self.cutinTime_video = None
+        self.cutoutTime_video = None
+        self.cutinTime_audio = None
 
     # 上下文右键菜单
     def menu_open(self):
@@ -86,7 +88,8 @@ class SmartBGM(QWidget):
         if not file:
             return
 
-        self.videofile=file
+        self.videofile = file
+        self.videofileLength = None
         # 视频输出
         self.UI.mediaObjectVideo.setCurrentSource(phonon.Phonon.MediaSource(file))  #加载当前的源文件
         phonon.Phonon.createPath(self.UI.mediaObjectVideo, self.UI.videoPlayer)     #将视频对象和播放控件关联起来
@@ -104,7 +107,8 @@ class SmartBGM(QWidget):
 
         fname = os.path.splitext(os.path.split(file)[1])[0]
         self.audiofile = file
-        self.audiolist[fname] = file
+        self.audiofileLength = None
+        self.audiolist[fname] = (file, -1)
         self.UI.cmb_music.clear()
         self.UI.cmb_music.addItem(fname)
 
@@ -125,7 +129,8 @@ class SmartBGM(QWidget):
         else:
             tips = u'请选择文件'
             extension = 'Files(*)'
-        currentPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
+        # currentPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
+        currentPath = '.'
         file = QFileDialog.getOpenFileName(self, tips, currentPath, extension)
         file = QString2String(file)
         print '[openFileDialog] File Selected: ' + (file or '<None>')
@@ -182,7 +187,7 @@ class SmartBGM(QWidget):
         self.UI.cmb_music.clear()
         self.audiolist.clear()
         for song in songs:
-            title = os.path.splitext(os.path.split(song)[1])[0]
+            title = os.path.splitext(os.path.split(song[0])[1])[0]
             self.audiolist[title] = song
             self.UI.cmb_music.addItem(title)
 
@@ -214,26 +219,34 @@ class SmartBGM(QWidget):
         cutoutTime_video = self.cutoutTime_video.hour()*3600+self.cutoutTime_video.minute()*60+self.cutoutTime_video.second()
         cutinTime_audio = self.cutinTime_audio.minute()*60+self.cutinTime_audio.second()
         timespan_video = (cutinTime_video, cutoutTime_video - cutinTime_video)
-        timespan_audio = (cutinTime_audio, cutoutTime_video - cutinTime_video)
+        timespan_audio = (cutinTime_audio, self.audiofileLength or (cutoutTime_video - cutinTime_video))    # BUG: may here go wrong!!
         audiofile = self.audiofile
         self.todoList.append((audiofile, timespan_video, timespan_audio))
-        print '[merge] Merge task added!'
+        print '[merge] Merge task [' +\
+              str(cutinTime_video) + ', ' +\
+              str(cutoutTime_video) + ': ' +\
+              str(audiofile) + ', ' +\
+              str(cutinTime_audio) + '] added!'
     # 保存按钮
     def btn_save_click(self):
+        if self.todoList == []:
+            self.err(7)
+            return
         remixer = Remixer(self.videofile)
         for todo in self.todoList:
             remixer.mix(todo[0], todo[1], todo[2])
-        outfile = remixer.remix()
+        remixer.remix()
         self.todoList = []
-        print '[save] Outfile saved to: ' + outfile
+        print '[save] SmartBGM manual mode done!'
 
     # 音乐切换下拉框
     def cmb_music_click(self):
         curMusic = QString2String(self.UI.cmb_music.currentText())
-        file = self.audiolist[curMusic]
+        file = self.audiolist[curMusic][0]
         print '[music_click] Current Music: ' + file
 
         self.audiofile = file
+        self.audiofileLength = self.audiolist[curMusic][1]
         # 音频输出
         self.UI.mediaObjectAudio.setCurrentSource(phonon.Phonon.MediaSource(file))
         self.audioOutput_audio = phonon.Phonon.AudioOutput(phonon.Phonon.VideoCategory, self)
@@ -298,7 +311,8 @@ class SmartBGM(QWidget):
             3 : u'当前时间小于指定的视频段起始时间，请重新指定！',
             4 : u'视频段的时间间距太小，请重新指定！',
             5 : u'请先指定需要的配乐类型！',
-            6 : u'请指定音视频文件和对应的时间！'
+            6 : u'请指定音视频文件和对应的时间！',
+            7 : u'请先添加音轨合并的任务！'
         }
         QMessageBox.question(self, (u'提示'), dictError[errCode], QMessageBox.Ok)
     # 键盘事件 @Override
@@ -363,7 +377,7 @@ class UI_SmartBGM(object):
         spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
         self.btn_video_cutin = QPushButton(self.layoutWidget)
-        self.btn_video_cutin.setObjectName(_fromUtf8("btn_cutin"))
+        self.btn_video_cutin.setObjectName(_fromUtf8("btn_video_cutin"))
         self.horizontalLayout_3.addWidget(self.btn_video_cutin)
         spacerItem2 = QSpacerItem(18, 18, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem2)
@@ -385,7 +399,7 @@ class UI_SmartBGM(object):
         spacerItem5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem5)
         self.btn_video_cutout = QPushButton(self.layoutWidget)
-        self.btn_video_cutout.setObjectName(_fromUtf8("btn_cutout"))
+        self.btn_video_cutout.setObjectName(_fromUtf8("btn_video_cutout"))
         self.horizontalLayout_4.addWidget(self.btn_video_cutout)
         spacerItem6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem6)
@@ -410,7 +424,7 @@ class UI_SmartBGM(object):
         spacerItem9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem9)
         self.cmb_music = QComboBox(self.layoutWidget)
-        self.cmb_music.setObjectName(_fromUtf8("comboBox"))
+        self.cmb_music.setObjectName(_fromUtf8("cmb_music"))
         self.horizontalLayout_5.addWidget(self.cmb_music)
         spacerItem10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem10)
@@ -447,7 +461,7 @@ class UI_SmartBGM(object):
         self.horizontalLayout_6.addItem(spacerItem14)
         self.btn_audio_cutin = QPushButton(self.layoutWidget)
         self.btn_audio_cutin.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.btn_audio_cutin.setObjectName(_fromUtf8("btn_audio_start"))
+        self.btn_audio_cutin.setObjectName(_fromUtf8("btn_audio_cutin"))
         self.horizontalLayout_6.addWidget(self.btn_audio_cutin)
         spacerItem15 = QSpacerItem(13, 18, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem15)
@@ -470,12 +484,12 @@ class UI_SmartBGM(object):
         spacerItem17 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem17)
         self.btn_tagsDialog = QPushButton(self.layoutWidget)
-        self.btn_tagsDialog.setObjectName(_fromUtf8("btn_tag"))
+        self.btn_tagsDialog.setObjectName(_fromUtf8("btn_tagsDialog"))
         self.horizontalLayout.addWidget(self.btn_tagsDialog)
         spacerItem18 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem18)
         self.btn_playTogether = QPushButton(self.layoutWidget)
-        self.btn_playTogether.setObjectName(_fromUtf8("btn_play_together"))
+        self.btn_playTogether.setObjectName(_fromUtf8("btn_playTogether"))
         self.horizontalLayout.addWidget(self.btn_playTogether)
         spacerItem19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem19)
@@ -566,21 +580,21 @@ class UI_SmartBGM(object):
         self.videoPlayer.setContextMenuPolicy(Qt.CustomContextMenu)
 
     def retranslateUi(self, parent):
-        parent.setObjectName(_fromUtf8("UI_SmartBGM"))
+        parent.setObjectName(_fromUtf8("SmartBGM"))
         parent.resize(911, 627)
         parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
         parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小
 
-        self.btn_video_cutin.setText(_translate("UI_SmartBGM", "视频切入点", None))
-        self.lbl_cutin.setText(_translate("UI_SmartBGM", "00:00:00", None))
-        self.btn_video_cutout.setText(_translate("UI_SmartBGM", "视频切出点", None))
-        self.lbl_cutout.setText(_translate("UI_SmartBGM", "00:00:00", None))
-        self.btn_audio_cutin.setText(_translate("UI_SmartBGM", "音频切入点", None))
-        self.lbl_audio_start.setText(_translate("UI_SmartBGM", "00:00", None))
-        self.btn_tagsDialog.setText(_translate("UI_SmartBGM", "配乐类型", None))
-        self.btn_playTogether.setText(_translate("UI_SmartBGM", "同时播放", None))
-        self.btn_merge.setText(_translate("UI_SmartBGM", "添加音轨", None))
-        self.btn_save.setText(_translate("UI_SmartBGM", "写入并保存", None))
+        self.btn_video_cutin.setText(_translate("btn_video_cutin", "视频切入点", None))
+        self.lbl_cutin.setText(_translate("lbl_cutin", "00:00:00", None))
+        self.btn_video_cutout.setText(_translate("btn_video_cutout", "视频切出点", None))
+        self.lbl_cutout.setText(_translate("lbl_cutout", "00:00:00", None))
+        self.btn_audio_cutin.setText(_translate("btn_audio_cutin", "音频切入点", None))
+        self.lbl_audio_start.setText(_translate("lbl_audio_start", "00:00", None))
+        self.btn_tagsDialog.setText(_translate("btn_tagsDialog", "配乐类型", None))
+        self.btn_playTogether.setText(_translate("btn_playTogether", "同时播放", None))
+        self.btn_merge.setText(_translate("btn_merge", "添加音轨", None))
+        self.btn_save.setText(_translate("btn_save", "写入并保存", None))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
