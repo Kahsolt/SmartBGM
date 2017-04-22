@@ -3,8 +3,11 @@
 #==========================
 #  Name:        Remixer
 #  Author:      zr
-#  Time:        2017/04/18
+#  Time:        2017/04/22
 #  Desciption:  Remix video with audio to generate final output
+
+# version log
+# v2: This version could merge more than one song at a time
 
 # Configurations
 path_to_soundtrack=r"tmp/soundtrack/"
@@ -25,13 +28,11 @@ from multiprocessing import Process
 # Classes
 class Remixer:
 
-    def __init__(self, path_to_video, path_to_audio):
-        self.timespan_video = []
-        self.timespan_audio = []
-
-        self.audioName = path_to_audio
+    def __init__(self, path_to_video):
+        # self.timespan_video = []
+        # self.timespan_audio = []
+        #
         self.videoName = path_to_video
-        self.audio=AudioFileClip(path_to_audio)
         self.video=VideoFileClip(path_to_video)
 
         self.soundTrackName = time.strftime("%H%M%S", time.localtime())
@@ -57,13 +58,13 @@ class Remixer:
     # 2.if t1=t3,直接合成
     # 3.if t1<t3,不妨设t3=n*t1+m(n,m均为整数)，则将歌曲循环n遍，只循环T0到end部分，剩余的m时间，重复步骤1
     # def video_merge(self, cutinTime, cutoutTime, audioTime, audiooutTime=0, mode='overlay'):
-    def remix(self):
-        audio = AudioSegment.from_file(self.audioName)
+    def mix_part(self,path_to_audio,timespan_video,timespan_audio):
         soundtrack = self.soundTrack
-        cutinTime=self.timespan_video[0]
-        cutoutTime=self.timespan_video[1]
-        audioTime=self.timespan_audio[0]
-        audiooutTime=self.timespan_audio[1]
+        audio = AudioSegment.from_file(path_to_audio)
+        cutinTime=timespan_video[0]
+        cutoutTime=timespan_video[1]
+        audioTime=timespan_audio[0]
+        audiooutTime=timespan_audio[1]
 
         t3 = cutoutTime - cutinTime
         soundtrack_len = soundtrack.__len__() / 1000.0
@@ -127,12 +128,14 @@ class Remixer:
             # final_part2.export('final_part2.mp3')
 
         soundtrack = part1 + final_part2 + part3
-        soundtrack.export(self.soundTrackName)
-        print 'over_remix_part1'
-        self.merge()
-        return path_to_outfile_dir+self.outfileName
- 
-    def merge(self):
+        # soundtrack.export(self.soundTrackName)
+        self.soundTrack = soundtrack
+        print 'over_mix_part!!'
+        # self.merge()
+        # return path_to_outfile_dir+self.outfileName
+
+    def remixer(self):
+        self.soundTrack.export(self.soundTrackName)
         self.video=self.video.without_audio()
         result_audio=AudioFileClip(self.soundTrackName)
         self.video =self.video.set_audio(result_audio)
@@ -143,19 +146,17 @@ class Remixer:
 def main():
     # 1.Construct
     # remixer = Remixer('path_to_video', 'path_to_audio')
-    remixer = Remixer('test/cononL.mp4', 'music/Over The Edge - Akon.mp3')
+    remixer = Remixer('test/cononL.mp4')
 
     # 2.Configure
     # use whatever data struct suitable to indicate START POINT and LENGTH of the clip to insert to
-    #
-    # remixer.timespan_video = [100, 300]
-    # remixer.timespan_audio = [500, 900]
-    remixer.timespan_video = [3, 400]
-    remixer.timespan_audio = [5, 150]
+    remixer.mix_part(path_to_audio='music/Over The Edge - Akon.mp3',timespan_audio=[5, 100],timespan_video=[3, 200])
+    remixer.mix_part(path_to_audio='music/Placebo,David Bowie - Without You I\'m Nothing.mp3',timespan_audio=[5, 100],timespan_video=[200, 400])
+    remixer.mix_part(path_to_audio='music/Queen - There Must Be More To Life Than This (William Orbit Mix).mp3',timespan_audio=[5, 100],timespan_video=[400, 500])
 
     # 3.Call methods
     # path_to_outile_dir = remixer.remix()
-    path_to_outfile=remixer.remix()
+    remixer.remixer()
 
 if __name__ == '__main__':
     # Run a Module as Main will run the example test routine
