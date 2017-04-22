@@ -5,4 +5,4 @@ tmp/*
 *.json
 connector.py
 test.py
-.idea/*
+.idea/workspace.xml
