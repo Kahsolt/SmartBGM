@@ -28,7 +28,10 @@ DB_MYSQL_SCHEMA = r'audiv'
 DB_MYSQL_CHARSET = r'utf8'
 
 # Imports
-import mysql.connector
+try:
+    import mysql.connector
+except:
+    print '[MusicDB] missing mysql.connector, working in offine mode only'
 
 # Functions
 def _String2Utf8(s):
