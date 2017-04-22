@@ -214,16 +214,13 @@ class SmartBGM(QWidget):
                         self.cutinTime_audio == None:
             self.err(6)
             return
-
         cutinTime_video = self.cutinTime_video.hour()*3600+self.cutinTime_video.minute()*60+self.cutinTime_video.second()
         cutoutTime_video = self.cutoutTime_video.hour()*3600+self.cutoutTime_video.minute()*60+self.cutoutTime_video.second()
         cutinTime_audio = self.cutinTime_audio.minute()*60+self.cutinTime_audio.second()
-        timespan_video = (cutinTime_video, cutoutTime_video - cutinTime_video)
-        timeEnd_audio = self.audiofileLength or (cutoutTime_video - cutinTime_video)
-        timespan_audio = (cutinTime_audio, timeEnd_audio)    # BUG: may here go wrong!!
-        audiofile = self.audiofile
-        self.todoList.append((audiofile, timespan_video, timespan_audio))
-        print ('[merge] Merge task [' + str(cutinTime_video) + ', ' + str(cutoutTime_video) + ': "' + str(audiofile) + '", ' + str(cutinTime_audio) + ', ' + str(timeEnd_audio) +'] added!')
+        timespan_video = (cutinTime_video, cutoutTime_video)
+        timespan_audio = (cutinTime_audio, self.audiofileLength)    # BUG: may here go wrong!!
+        self.todoList.append((self.audiofile, timespan_video, timespan_audio))
+        print '[merge] Merge task [(%d, %d), ("%s", %d, %d)] added!'% (cutinTime_video, cutoutTime_video, self.audiofile, cutinTime_audio, self.audiofileLength or '')
     # 保存按钮
     def btn_save_click(self):
         if self.todoList == []:

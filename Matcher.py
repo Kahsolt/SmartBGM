@@ -12,7 +12,7 @@ MUSIC_MATCH_THRESHOLD = 0.25
 
 # Imports
 import random
-from MusicDB import MUSIC_VOC, MUSIC_DIR, MUSIC_AUX_SCENE, DB_LOCAL_FILE
+from MusicDB import MUSIC_VOC, MUSIC_DIR, MUSIC_AUX_SCENE, MUSIC_AUX_CAFFE, DB_LOCAL_FILE
 
 # Functions
 def _String2Utf8(s):
@@ -44,7 +44,7 @@ class DB:
     def _checkTags(self, tags):
         ntags = []
         for t in tags:
-            if t in MUSIC_VOC or t in MUSIC_AUX_SCENE:
+            if t in MUSIC_VOC or t in MUSIC_AUX_SCENE or t in MUSIC_AUX_CAFFE:
                 ntags.append(t)
             else:
                 print('DB: tag "' + t + '" is invalid, omitted')

@@ -30,8 +30,13 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QApplication.translate(context, text, disambig)
 
+# Functions
 def QString2String(qStr):
     return unicode(qStr.toUtf8(), 'utf-8', 'ignore')
+def _String2Utf8(s):
+    return s.encode('utf8')
+def _Utf82String(s):
+    return s.decode('utf8')
 
 # 使得VideoWidget拥有QWidget的方法，主要是右键菜单
 class myVideoWidget(phonon.Phonon.VideoWidget,QWidget):
@@ -131,7 +136,7 @@ class SmartBGM_Auto(QWidget):
     # 一键配乐
     def btn_autoMatch_click(self):
         slicer = Slicer(self.videofile)
-        slicer.fps_rate(0.1)
+        slicer.fps_rate(1)
         path_to_frame_slices_dir = slicer.slice()
         print '[slice:1] Sliced frames in ' + path_to_frame_slices_dir
 
@@ -139,7 +144,7 @@ class SmartBGM_Auto(QWidget):
         video_tags = []
         raw_tags = analyzer.analyze()
         for tag in raw_tags:
-            video_tags.append(tag[0])
+            video_tags.append(_Utf82String(tag[0]))
         if self.UI.cmb_scene.currentText() != '':
             video_tags.append(self.UI.cmb_scene.currentText())
         print '[analyze:2] Tags are ' + ','.join(video_tags)
@@ -156,10 +161,7 @@ class SmartBGM_Auto(QWidget):
                 usedTime = (song[1] >= restTimespan) and restTimespan or song[1]
                 remixer.mix(song[0], (ptrVideo, song[1]), (0, song[1]))
                 ptrVideo += usedTime
-                print '[merge:4] Mix task ["' + \
-                      str(song[0]) + '": ' + \
-                      str(ptrVideo) + ', ' + \
-                      str(usedTime) + '] executes!'
+                print '[merge:4] Mix task ["%s": (%d, %d)] executes!'% (song[0], ptrVideo, usedTime)
             else:
                 break
         remixer.remix()
