@@ -2,76 +2,51 @@
 # -*- coding: utf-8 -*-
 #==========================
 #  Name:        Slicer
-#  Author:      zr
-#  Time:        2017/04/16
+#  Author:      zr; and kahsolt fucked it up
+#  Time:        2017/04/22
 #  Desciption:  Clip video into frame slices
 
 # Configurations
-path_to_img=r"tmp/img/"
-fps_rate=0.1
+SLICER_DEFAULT_FPS = 1
+SLICER_TMP_IMG = "./tmp/img"
 
 # Imports
-import numpy as np
-import string
-from subprocess import Popen
+import os
 
 # Classes
 class Slicer:
-
-    # delte all imgs in temp folder
-    def initImgs(self):
-        delCMD=r"rm "+path_to_img+"*.jpg"
-        print delCMD
-        p = Popen(args=delCMD, shell=True)
-
     def __init__(self, path_to_video):
+        self.videofile = path_to_video
+        self.fpsrate = SLICER_DEFAULT_FPS
 
-        self.videoName=path_to_video
-        # self.videodir=r"Videos"
-        # self.imgDir=r'tmp'
-        # self.batdir=r'VideotoImgs'
+        self.clearTmp()
 
-        # self.videoName=r'cononL.mp4'
-        self.ImgperSecond="fps=1"
-        self.defaultCommand="ffmpeg -i videoname -vf imgpersecond %d.jpg"
-        self.CommandP1="ffmpeg -i "
-        self.CommandP2=""
-        self.CommandP3=" -vf "
-        self.CommandP4=""
-        self.CommandP5=" "+path_to_img+r"%d.jpg"
-        self.initImgs()
+    def clearTmp(self):
+        cmdDel = r"rm " + SLICER_TMP_IMG + "/*.jpg"
+        print '[Slicer] executing cmd "%s"' % (cmdDel)
+        res = os.popen(cmdDel)
 
     def fps_rate(self,rate):
-        fps_rate=rate
-        self.ImgperSecond="fps="+str(fps_rate)
+        self.fpsrate = rate
 
     def slice(self):
-        self.CommandP2=self.videoName
-        self.CommandP4=self.ImgperSecond
-        Command=self.CommandP1+self.CommandP2+self.CommandP3+self.CommandP4+self.CommandP5
-        p = Popen(args=Command,shell=True)
-        return r"tmp/img/"
-        # return 'path_to_frame_slices_dir'
-
+        cmdFfmpeg = 'ffmpeg -i "%s" -vf fps=%f "%s/%%d.jpg"'% (self.videofile, self.fpsrate, SLICER_TMP_IMG)
+        print '[Slicer] executing cmd "%s"'% (cmdFfmpeg)
+        res = os.popen(cmdFfmpeg)
+        return SLICER_TMP_IMG + '/'
 
 # Main Entrance
 def main():
     # 1.Construct
-    # slicer = Slicer('path_to_video',sample_rate)
-    slicer=Slicer(path_to_video='test/cononL.mp4')
-    
-    #cmd=s1.gettheCommand()
-    #p = Popen(args=cmd,shell=True)
+    # slicer = Slicer('path_to_video')
+    slicer = Slicer(path_to_video='test/cononL.mp4')
 
     # 2.Configure
     # slicer.sample_rate = 1    # extract one frame per second
-    slicer.fps_rate(0.1)
+    slicer.fps_rate(1)
 
     # 3.Call methods
-    # path_to_frame_slices_dir = slicer.slice()
-
-    # format is tmp/img
-    path_to_frame_slices_dir=slicer.slice()
+    path_to_frame_slices_dir = slicer.slice()
 
 if __name__ == '__main__':
     # Run a Module as Main will run the example test routine

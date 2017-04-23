@@ -130,7 +130,7 @@ class SmartBGM(QWidget):
             tips = u'请选择文件'
             extension = 'Files(*)'
         # currentPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
-        currentPath = '.'
+        currentPath = './test'
         file = QFileDialog.getOpenFileName(self, tips, currentPath, extension)
         file = QString2String(file)
         print '[openFileDialog] File Selected: ' + (file or '<None>')
@@ -159,11 +159,11 @@ class SmartBGM(QWidget):
         Ta = self.cutinTime_video   #视频切入点的时间
         Tb = self.videoTime         #当前视频的时间
         Sta = Ta.hour()*3600+Ta.minute()*60+Ta.second()
-        Stb = Tb.hour()*3600+Tb.minute()*60+Tb.second()-10  # QEST: -10?
+        Stb = Tb.hour()*3600+Tb.minute()*60+Tb.second() - 10  # QEST: -10?
         # print Ta.hour(), Ta.minute(), Ta.second(), Tb.hour(), Tb.minute(), Tb.second() # 输出时间
-        if Sta > Stb:
-            self.err(4)
-            return
+        # if Sta > Stb:
+        #    self.err(4)
+        #    return
         self.UI.lbl_cutout.setText(_translate("Form", self.videoTime.toString('hh:mm:ss'), None))
         self.cutoutTime_video = self.videoTime
         print '[videoCutOut] Video cut out Time: ' + self.cutoutTime_video.toString()
@@ -214,19 +214,13 @@ class SmartBGM(QWidget):
                         self.cutinTime_audio == None:
             self.err(6)
             return
-
         cutinTime_video = self.cutinTime_video.hour()*3600+self.cutinTime_video.minute()*60+self.cutinTime_video.second()
         cutoutTime_video = self.cutoutTime_video.hour()*3600+self.cutoutTime_video.minute()*60+self.cutoutTime_video.second()
         cutinTime_audio = self.cutinTime_audio.minute()*60+self.cutinTime_audio.second()
-        timespan_video = (cutinTime_video, cutoutTime_video - cutinTime_video)
-        timespan_audio = (cutinTime_audio, self.audiofileLength or (cutoutTime_video - cutinTime_video))    # BUG: may here go wrong!!
-        audiofile = self.audiofile
-        self.todoList.append((audiofile, timespan_video, timespan_audio))
-        print '[merge] Merge task [' +\
-              str(cutinTime_video) + ', ' +\
-              str(cutoutTime_video) + ': ' +\
-              str(audiofile) + ', ' +\
-              str(cutinTime_audio) + '] added!'
+        timespan_video = (cutinTime_video, cutoutTime_video)
+        timespan_audio = (cutinTime_audio, self.audiofileLength)    # BUG: may here go wrong!!
+        self.todoList.append((self.audiofile, timespan_video, timespan_audio))
+        print '[merge] Merge task [(%d, %d), ("%s", %d, %d)] added!'% (cutinTime_video, cutoutTime_video, self.audiofile, cutinTime_audio, self.audiofileLength or '')
     # 保存按钮
     def btn_save_click(self):
         if self.todoList == []:
