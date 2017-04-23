@@ -6,4 +6,4 @@ tmp/*
 connector.py
 test.py
 .idea/workspace.xml
-
+music/*
