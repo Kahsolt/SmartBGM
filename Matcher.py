@@ -62,6 +62,7 @@ class DB:
 
     def query(self, tags):
         tags = self._checkTags(tags)
+        print '[Matcher] query using tags: ' + ','.join(tags)
         res = []
         for song in self.dictMusic:
             if self._calcMatchScore(tags, song['tags']) == 1.0:
@@ -71,6 +72,7 @@ class DB:
 
     def rank(self, tags):
         tags = self._checkTags(tags)
+        print '[Matcher] rank using tags: ' + ','.join(tags)
         res = []
         for song in self.dictMusic:
             if self._calcMatchScore(tags, song['tags']) > MUSIC_MATCH_THRESHOLD:

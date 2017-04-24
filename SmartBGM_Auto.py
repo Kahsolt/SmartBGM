@@ -7,15 +7,17 @@
 #  Desciption:  SmartBGM auto mode main editor
 
 import sys, os
+import cv2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import phonon
 
 from MusicDB import MUSIC_AUX_SCENE
 from Slicer import Slicer
-#from Analyzer import Analyzer
+from Analyzer import Analyzer
 from Matcher import Matcher
 from Remixer import Remixer
+
 
 try:
     _fromUtf8 = QString.fromUtf8
@@ -106,7 +108,11 @@ class SmartBGM_Auto(QWidget):
             return
 
         self.videofile = file
-        self.videofileLength = 'TODO: how to get videofileLength!!';
+        from moviepy.editor import VideoFileClip
+        self.videofileLength = int(VideoFileClip(self.videofile).duration)
+        # print(int(self.videofileLength.duration+0.5))
+
+
         # 视频输出
         self.UI.mediaObjectVideo.setCurrentSource(phonon.Phonon.MediaSource(file))  # 加载当前的源文件
         phonon.Phonon.createPath(self.UI.mediaObjectVideo, self.UI.videoPlayer)  # 将视频对象和播放控件关联起来
@@ -127,7 +133,8 @@ class SmartBGM_Auto(QWidget):
         else:
             tips = u'请选择文件'
             extension = 'Files(*)'
-        currentPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
+        # currentPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
+        currentPath = './test'
         file = QFileDialog.getOpenFileName(self, tips, currentPath, extension)
         file = QString2String(file)
         print '[openFileDialog] File Selected: ' + (file or '<None>')
@@ -144,9 +151,9 @@ class SmartBGM_Auto(QWidget):
         video_tags = []
         raw_tags = analyzer.analyze()
         for tag in raw_tags:
-            video_tags.append(_Utf82String(tag[0]))
+            video_tags.append(tag[0])
         if self.UI.cmb_scene.currentText() != '':
-            video_tags.append(self.UI.cmb_scene.currentText())
+            video_tags.append(QString2String(self.UI.cmb_scene.currentText()))
         print '[analyze:2] Tags are ' + ','.join(video_tags)
 
         matcher = Matcher(video_tags)
@@ -159,9 +166,9 @@ class SmartBGM_Auto(QWidget):
             if ptrVideo < self.videofileLength:
                 restTimespan = self.videofileLength - ptrVideo
                 usedTime = (song[1] >= restTimespan) and restTimespan or song[1]
-                remixer.mix(song[0], (ptrVideo, song[1]), (0, song[1]))
+                remixer.mix(song[0], (ptrVideo, ptrVideo + song[1]), (0, song[1]))
                 ptrVideo += usedTime
-                print '[merge:4] Mix task ["%s": (%d, %d)] executes!'% (song[0], ptrVideo, usedTime)
+                print '[mix:4] Mix task ["%s": (%d, %d)] executes!'% (song[0], ptrVideo, usedTime)
             else:
                 break
         remixer.remix()
