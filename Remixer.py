@@ -3,11 +3,12 @@
 #==========================
 #  Name:        Remixer
 #  Author:      zr
-#  Time:        2017/04/22
+#  Time:        2017/04/24
 #  Desciption:  Remix video with audio to generate final output
 
 # version log
-# v2: This version could merge more than one song at a time
+# v2:now we could merge more than one song a time
+# v3:mix function, add volume and mute
 
 # Configurations
 path_to_soundtrack=r"tmp/soundtrack/"
@@ -58,7 +59,9 @@ class Remixer:
     # 2.if t1=t3,直接合成
     # 3.if t1<t3,不妨设t3=n*t1+m(n,m均为整数)，则将歌曲循环n遍，只循环T0到end部分，剩余的m时间，重复步骤1
     # def video_merge(self, cutinTime, cutoutTime, audioTime, audiooutTime=0, mode='overlay'):
-    def mix_part(self,path_to_audio,timespan_video,timespan_audio):
+
+    # 参数是两个路径以及是否保留原始音轨（True保留），
+    def mix_part(self,path_to_audio,timespan_video,timespan_audio,mute=True,volume = 0.7):
         soundtrack = self.soundTrack
         audio = AudioSegment.from_file(path_to_audio)
         cutinTime=timespan_video[0]
@@ -70,6 +73,8 @@ class Remixer:
         soundtrack_len = soundtrack.__len__() / 1000.0
         t1 = audiooutTime - audioTime
 
+        loud_rank1 = audio.rms
+        loud_rank2 = soundtrack.rms
         # 这里是代码部分
         part1 = soundtrack[0:cutinTime * 1000]
         part2 = soundtrack[cutinTime * 1000:cutoutTime * 1000]
@@ -110,11 +115,14 @@ class Remixer:
                 audio_adapter = audio_adapter.append(audio_cut)
             audio_adapter = audio_adapter.append(audio_cut[0:reminder * 1000])
 
+
             # debug3
             # audio_adapter.export('audio_adapter.mp3')
             # audio_adapter=AudioSegment.from_file('audio_adapter.mp3')
-
-            final_part2 = part2.overlay(audio_adapter)
+            if(mute==False):
+                final_part2 = audio_adapter
+            else:
+                final_part2 = part2.overlay(audio_adapter)
             # final_part2.export('final_part2.mp3')
 
 
@@ -124,7 +132,10 @@ class Remixer:
             end_point = audioTime + t3
             audio_adapter = audio_cut[audioTime * 1000:end_point * 1000]
             # audio_adapter.export('audio_adapter.mp3')
-            final_part2 = part2.overlay(audio_adapter)
+            if (mute == False):
+                final_part2 = audio_adapter
+            else:
+                final_part2 = part2.overlay(audio_adapter)
             # final_part2.export('final_part2.mp3')
 
         soundtrack = part1 + final_part2 + part3
@@ -150,9 +161,8 @@ def main():
 
     # 2.Configure
     # use whatever data struct suitable to indicate START POINT and LENGTH of the clip to insert to
-    remixer.mix_part(path_to_audio='music/Over The Edge - Akon.mp3',timespan_audio=[5, 100],timespan_video=[3, 200])
-    remixer.mix_part(path_to_audio='music/Placebo,David Bowie - Without You I\'m Nothing.mp3',timespan_audio=[5, 100],timespan_video=[200, 400])
-    remixer.mix_part(path_to_audio='music/Queen - There Must Be More To Life Than This (William Orbit Mix).mp3',timespan_audio=[5, 100],timespan_video=[400, 500])
+    remixer.mix_part(path_to_audio='music/Over The Edge - Akon.mp3',timespan_audio=[5, 200],timespan_video=[3, 200],mute=False)
+    remixer.mix_part(path_to_audio='music/Queen - There Must Be More To Life Than This (William Orbit Mix).mp3',timespan_audio=[5, 100],timespan_video=[100, 300],mute=False)
 
     # 3.Call methods
     # path_to_outile_dir = remixer.remix()
