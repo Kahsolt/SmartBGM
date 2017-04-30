@@ -110,16 +110,20 @@ def main():
     #
     matcher = Matcher(['安静放松', '下午茶'])
     searcher = Matcher(['清晨', '安静放松', '下午茶'])
+    null = Matcher([])
 
     # 2.Search for music using the given tag list
     #   invalid tags will rise a warning and be omitted
     #
     #   \return     a list of music names with base path (max item number = MUSIC_ITEM_MAX)
     #
-    res = matcher.match()       # exactly matches all tags
-    print(res)                  # utf8 can't be printed
-    res = searcher.search()     # relatively matches some tags well (a bit slower)
-    print(res)                  # utf8 can't be printed
+    # res = matcher.match()       # exactly matches all tags
+    # print(res)                  # utf8 can't be printed
+    # res = searcher.search()     # relatively matches some tags well (a bit slower)
+    # print(res)                  # utf8 can't be printed
+    res = null.match()
+    for r in res:
+        print(r[0]+',')
 
 if __name__ == '__main__':
     main()

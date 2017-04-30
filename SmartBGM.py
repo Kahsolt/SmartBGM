@@ -81,7 +81,7 @@ class SmartBGM(QWidget):
     def menu_open(self):
         popMenu = QMenu()
         popMenu.addAction(QAction(QIcon(r'./icon/video.ico'), u'打开视频文件', self, enabled = True, triggered=self.menu_open_videoFile))
-        popMenu.addAction(QAction(QIcon(r'./icon/audio.ico'), u'打开音频文件', self, enabled = True, triggered=self.menu_open_audioFile))
+        popMenu.addAction(QAction(QIcon(r'./icon/audio.ico'), u'打开音频文件', self, enabled = False, triggered=self.menu_open_audioFile))
         popMenu.exec_(QCursor.pos())
     def menu_open_videoFile(self):
         file = self.menu_open_openFileDialog('video')
@@ -228,7 +228,7 @@ class SmartBGM(QWidget):
             return
         remixer = Remixer(self.videofile)
         for todo in self.todoList:
-            remixer.mix(todo[0], todo[1], todo[2])
+            remixer.mix(todo[0], todo[1], todo[2],True)
         remixer.remix()
         self.todoList = []
         print '[save] SmartBGM manual mode done!'
@@ -317,12 +317,13 @@ class SmartBGM(QWidget):
 class UI_SmartBGM(object):
     def setupUi(self, parent):
         self.line_3 = QFrame(parent)
-        self.line_3.setGeometry(QRect(10, 580, 891, 16))
+        #self.line_3.setGeometry(QRect(10, 580, 891, 16))
         self.line_3.setFrameShape(QFrame.HLine)
         self.line_3.setFrameShadow(QFrame.Sunken)
         self.line_3.setObjectName(_fromUtf8("line_3"))
+        
         self.layoutWidget = QWidget(parent)
-        self.layoutWidget.setGeometry(QRect(0, 0, 911, 621))
+        self.layoutWidget.setGeometry(QRect(0, 0, 1271, 971))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setMargin(0)
@@ -473,6 +474,7 @@ class UI_SmartBGM(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
         self.horizontalLayout_7.addLayout(self.verticalLayout_2)
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
+        self.verticalLayout_3.addWidget(self.line_3)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         spacerItem17 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -508,10 +510,10 @@ class UI_SmartBGM(object):
         self.horizontalLayout.setStretch(7, 10)
         self.horizontalLayout.setStretch(8, 20)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
-        self.verticalLayout_3.setStretch(0, 50)
+        self.verticalLayout_3.setStretch(0, 90)
         self.verticalLayout_3.setStretch(1, 1)
         self.verticalLayout_3.setStretch(2, 10)
-        self.verticalLayout_3.setStretch(3, 3)
+        self.verticalLayout_3.setStretch(4, 3)
 
         self.retranslateUi(parent)
         QMetaObject.connectSlotsByName(parent)
@@ -575,7 +577,7 @@ class UI_SmartBGM(object):
 
     def retranslateUi(self, parent):
         parent.setObjectName(_fromUtf8("SmartBGM"))
-        parent.resize(911, 627)
+        parent.resize(1271, 971)
         parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
         parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小
 

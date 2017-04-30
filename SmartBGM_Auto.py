@@ -18,7 +18,6 @@ from Analyzer import Analyzer
 from Matcher import Matcher
 from Remixer import Remixer
 
-
 try:
     _fromUtf8 = QString.fromUtf8
 except AttributeError:
@@ -145,7 +144,7 @@ class SmartBGM_Auto(QWidget):
         slicer = Slicer(self.videofile)
         slicer.fps_rate(1)
         path_to_frame_slices_dir = slicer.slice()
-        print '[slice:1] Sliced frames in ' + path_to_frame_slices_dir
+        print '[slice:1/5] Sliced frames in ' + path_to_frame_slices_dir
 
         analyzer = Analyzer(path_to_frame_slices_dir)
         video_tags = []
@@ -154,25 +153,28 @@ class SmartBGM_Auto(QWidget):
             video_tags.append(tag[0])
         if self.UI.cmb_scene.currentText() != '':
             video_tags.append(QString2String(self.UI.cmb_scene.currentText()))
-        print '[analyze:2] Tags are ' + ','.join(video_tags)
+        print '[analyze:2/5] Tags are ' + ','.join(video_tags)
 
         matcher = Matcher(video_tags)
         songs = matcher.match()
-        print '[match:3] ' + str(len(songs)) + ' songs available'
+        print '[match:3/5] ' + str(len(songs)) + ' songs available'
 
         remixer = Remixer(self.videofile)
         ptrVideo = 0
+        isMuted = True
+        if self.UI.chk_ost.isChecked():
+            isMuted = False
         for song in songs:
             if ptrVideo < self.videofileLength:
                 restTimespan = self.videofileLength - ptrVideo
-                usedTime = (song[1] >= restTimespan) and restTimespan or song[1]
-                remixer.mix(song[0], (ptrVideo, ptrVideo + song[1]), (0, song[1]))
+                usedTime = (restTimespan <= song[1]) and restTimespan or song[1]
+                remixer.mix(song[0], (ptrVideo, ptrVideo + usedTime), (0, usedTime), isMuted)
+                print '[mix:4/5] Mix task ["%s": (%d, %d)] executes!'% (song[0], ptrVideo, ptrVideo + usedTime)
                 ptrVideo += usedTime
-                print '[mix:4] Mix task ["%s": (%d, %d)] executes!'% (song[0], ptrVideo, usedTime)
             else:
                 break
         remixer.remix()
-        print '[remix:5] SmartBGM auto mode done!'
+        print '[remix:5/5] SmartBGM auto mode done!'
 
     # 多媒体状态改变事件处理
     def stateChanged_video(self, newState):
@@ -208,7 +210,7 @@ class SmartBGM_Auto(QWidget):
 class UI_SmartBGM_Auto(object):
     def setupUi(self, parent):
         self.layoutWidget = QWidget(parent)
-        self.layoutWidget.setGeometry(QRect(0, 0, 911, 631))
+        self.layoutWidget.setGeometry(QRect(0, 0, 1271, 971))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.verticalLayout_3 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_3.setMargin(0)
@@ -319,7 +321,7 @@ class UI_SmartBGM_Auto(object):
             self.cmb_scene.addItem(scene.decode('utf8'))
 
     def retranslateUi(self, parent):
-        parent.resize(912, 633)
+        parent.resize(1271, 971)
         parent.setObjectName(_fromUtf8("Form"))
         parent.setWindowFlags(Qt.WindowMinimizeButtonHint)  # 停用窗口最大化按钮
         parent.setFixedSize(parent.width(), parent.height())  # 禁止改变窗口的大小

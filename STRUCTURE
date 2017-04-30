@@ -23,6 +23,7 @@ SmartBGM/		# project root
 
 	TagSelector.py  # (UI) Tag Seletor Form
 	SmartBGM.py		# (UI) Main Editor Form ; main laucher
+	SmartBGM_AUTO.py	# (UI) Main Editor Form(Auto Mode) ; main laucher
 
 [Classical Program Workflow]
 
@@ -38,7 +39,9 @@ SmartBGM/		# project root
 	matcher.mode = 0					# if we have multiple selection algorithms
 	path_to_audio = matcher.match()
 
+	<DEPRECATED>
 	remixer = Remixer('path_to_video', 'path_to_audio')
 	remixer.timespan_video = [100, 300]	 # use whatever data struct suitable to indicate START POINT and LENGTH of the clip to insert to
 	remixer.timespan_audio = [500, 900]
 	path_to_outfile = remixer.remix()
+	</DEPRECATED>
